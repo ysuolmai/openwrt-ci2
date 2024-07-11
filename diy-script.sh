@@ -95,6 +95,7 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-ddns-go=y"
 "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
+"CONFIG_PACKAGE_luci-app-turboacc=y"
 )
 
 # Path to the .config file
