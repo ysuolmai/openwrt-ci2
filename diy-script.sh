@@ -67,6 +67,7 @@ sed -i '/usb/d' .config
 sed -i '/passwall/d' .config
 sed -i '/v2ray/d' .config
 sed -i '/sing-box/d' .config
+sed -i '/ddns/d' .config
 sed -i '/SINGBOX/d' .config
 #sed -i '/qihoo_v6/d' .config
 sed -i '/redmi_ax5=y/d' .config
@@ -92,6 +93,8 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-adguardhome=y"
 "CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
+"CONFIG_PACKAGE_luci-app-ddns-go=y"
+"CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
 )
 
 # Path to the .config file
