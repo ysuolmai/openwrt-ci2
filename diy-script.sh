@@ -96,6 +96,8 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-app-ddns-go=y"
 "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-turboacc=y"
+"CONFIG_PACKAGE_kmod-tcp-bbr=y"
+"CONFIG_PACKAGE_kmod-ipt-offload=y"
 )
 
 # Path to the .config file
