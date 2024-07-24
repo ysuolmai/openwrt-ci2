@@ -112,7 +112,5 @@ done
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-rm -rf ../feeds/packages/net/shadowsocks-rust
-rm -rf package/net/shadowsocks-rust
-cp -r package/helloworld/shadowsocks-rust ../feeds/packages/net/shadowsocks-rust
-cp -r package/helloworld/shadowsocks-rust package/net/shadowsocks-rust
+rm -rf package/feeds/packages/shadowsocks-rust
+cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rust
