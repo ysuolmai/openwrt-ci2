@@ -111,3 +111,6 @@ done
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
+
+rm -rf ../feeds/packages/net/shadowsocks-rust
+mv ../feeds/packages/ssr-plus/shadowsocks-rust ../feeds/packages/net/shadowsocks-rust
