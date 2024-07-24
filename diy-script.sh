@@ -63,7 +63,6 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 
 
 keywords_to_delete=(
-"usb"
 "passwall"
 "v2ray"
 "sing-box"
@@ -79,15 +78,18 @@ keywords_to_delete=(
 "jdcloud_ax6600"
 "linksys_mr7350"
 "uugamebooster"
-"samba"
-"autosamba"
 "luci-app-homeproxy"
 )
+
+if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
+  	keywords_to_delete+=("usb")
+ 	  keywords_to_delete+=("samba")
+  	keywords_to_delete+=("autosamba")
+fi
 
 for line in "${keywords_to_delete[@]}"; do
     sed -i "/$line/d" ./.config
 done
-
 
 provided_config_lines=(
 "CONFIG_PACKAGE_luci-app-ssr-plus=y"
