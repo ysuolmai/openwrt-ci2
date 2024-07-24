@@ -113,4 +113,6 @@ done
 ./scripts/feeds install -a
 
 rm -rf ../feeds/packages/net/shadowsocks-rust
-mv ../feeds/packages/helloworld/shadowsocks-rust ../feeds/packages/net/shadowsocks-rust
+rm -rf package/net/shadowsocks-rust
+cp package/helloworld/shadowsocks-rust ../feeds/packages/net/shadowsocks-rust
+cp package/helloworld/shadowsocks-rust package/net/shadowsocks-rust
