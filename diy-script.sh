@@ -62,20 +62,31 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 #chmod 755 package/luci-app-onliner/root/usr/share/onliner/setnlbw.sh
 
 
-#process .config file
-sed -i '/usb/d' .config
-sed -i '/passwall/d' .config
-sed -i '/v2ray/d' .config
-sed -i '/sing-box/d' .config
-sed -i '/ddns/d' .config
-sed -i '/SINGBOX/d' .config
-#sed -i '/qihoo_v6/d' .config
-sed -i '/redmi_ax5=y/d' .config
-sed -i '/xiaomi_ax3600/d' .config
-sed -i '/xiaomi_ax9000/d' .config
-#sed -i '/jdc_ax1800-pro/d' .config
-sed -i '/xiaomi_ax1800/d' .config
-sed -i '/cmiot_ax18/d' .config
+keywords_to_delete=(
+"usb"
+"passwall"
+"v2ray"
+"sing-box"
+"ddns"
+"SINGBOX"
+"redmi_ax5=y"
+"xiaomi_ax3600"
+"xiaomi_ax9000"
+"xiaomi_ax1800"
+"cmiot_ax18"
+"glinet_gl-ax1800"
+"glinet_gl-axt1800"
+"jdcloud_ax6600"
+"linksys_mr7350"
+"uugamebooster"
+"samba"
+"autosamba"
+"luci-app-homeproxy"
+)
+
+for line in "${keywords_to_delete[@]}"; do
+    sed -i "/$line/d" ./.config
+done
 
 
 provided_config_lines=(
