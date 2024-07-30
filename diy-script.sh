@@ -79,6 +79,7 @@ keywords_to_delete=(
 "linksys_mr7350"
 "uugamebooster"
 "luci-app-homeproxy"
+"CONFIG_TARGET_INITRAMFS"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
