@@ -61,6 +61,11 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 #sed -i '$i uci commit nlbwmon' package/lean/default-settings/files/zzz-default-settings
 #chmod 755 package/luci-app-onliner/root/usr/share/onliner/setnlbw.sh
 
+#tailscale
+sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
+git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
+
+
 
 keywords_to_delete=(
 "passwall"
@@ -110,6 +115,7 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
 "CONFIG_PACKAGE_ttyd=y"
 "CONFIG_TARGET_INITRAMFS=n"
+"CONFIG_PACKAGE_luci-app-tailscale=y"
 #"CONFIG_PACKAGE_luci-app-vlmcsd=y"
 #"CONFIG_PACKAGE_vlmcsd=y"
 #"CONFIG_PACKAGE_luci-i18n-vlmcsd-zh-cn=y"
