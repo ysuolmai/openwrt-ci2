@@ -123,7 +123,7 @@ if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
     provided_config_lines+=("CONFIG_PACKAGE_luci-app-docker=y")
     provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y")
     provided_config_lines+=("CONFIG_PACKAGE_luci-app-dockerman=y")
-    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn")
+    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y")
 fi
 
 # Path to the .config file
