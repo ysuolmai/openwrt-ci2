@@ -115,11 +115,14 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
 "CONFIG_PACKAGE_ttyd=y"
 "CONFIG_TARGET_INITRAMFS=n"
-#"CONFIG_PACKAGE_luci-app-tailscale=y"
-#"CONFIG_PACKAGE_luci-app-vlmcsd=y"
-#"CONFIG_PACKAGE_vlmcsd=y"
-#"CONFIG_PACKAGE_luci-i18n-vlmcsd-zh-cn=y"
+"CONFIG_PACKAGE_luci-app-diskman=y"
+"CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y"
 )
+
+if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
+  	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
+  	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y")
+fi
 
 # Path to the .config file
 config_file_path=".config" 
