@@ -115,13 +115,15 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
 "CONFIG_PACKAGE_ttyd=y"
 "CONFIG_TARGET_INITRAMFS=n"
-"CONFIG_PACKAGE_luci-app-diskman=y"
-"CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y"
 )
 
 if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
   	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
   	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y")
+    provided_config_lines+=("CONFIG_PACKAGE_luci-app-docker=y")
+    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y")
+    provided_config_lines+=("CONFIG_PACKAGE_luci-app-dockerman=y")
+    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn")
 fi
 
 # Path to the .config file
