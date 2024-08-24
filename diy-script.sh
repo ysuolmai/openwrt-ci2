@@ -98,8 +98,8 @@ for line in "${keywords_to_delete[@]}"; do
 done
 
 provided_config_lines=(
-"CONFIG_PACKAGE_luci-app-ssr-plus=y"
-"CONFIG_PACKAGE_luci-i18n-ssr-plus-zh-cn=y"
+#"CONFIG_PACKAGE_luci-app-ssr-plus=y"
+#"CONFIG_PACKAGE_luci-i18n-ssr-plus-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-zerotier=y"
 "CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-adguardhome=y"
@@ -115,16 +115,18 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
 "CONFIG_PACKAGE_ttyd=y"
 "CONFIG_TARGET_INITRAMFS=n"
+"CONFIG_PACKAGE_luci-app-passwall=y"
+"CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y"
 )
 
-if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
-  	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
-  	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y")
-    provided_config_lines+=("CONFIG_PACKAGE_luci-app-docker=y")
-    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y")
-    provided_config_lines+=("CONFIG_PACKAGE_luci-app-dockerman=y")
-    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y")
-fi
+#if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
+#  	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
+#  	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y")
+#    provided_config_lines+=("CONFIG_PACKAGE_luci-app-docker=y")
+#    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y")
+#    provided_config_lines+=("CONFIG_PACKAGE_luci-app-dockerman=y")
+#    provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y")
+#fi
 
 # Path to the .config file
 config_file_path=".config" 
