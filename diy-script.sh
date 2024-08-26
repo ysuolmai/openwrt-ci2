@@ -32,6 +32,7 @@ git clone https://github.com/gngpp/luci-theme-design.git  package/luci-theme-des
 git clone --depth=1 https://github.com/fw876/helloworld.git package/helloworld
 #rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
 #git clone https://github.com/sbwml/openwrt_helloworld package/luci-app-ssr-plus
+git clone --depth=1 https://github.com/VIKINGYFY/homeproxy package/homeproxy
 
 # Themes
 #git clone --depth=1 -b 18.06 https://github.com/kiddin9/luci-theme-edge package/luci-theme-edge
@@ -115,8 +116,10 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
 "CONFIG_PACKAGE_ttyd=y"
 "CONFIG_TARGET_INITRAMFS=n"
-"CONFIG_PACKAGE_luci-app-passwall=y"
-"CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y"
+#"CONFIG_PACKAGE_luci-app-passwall=y"
+#"CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y"
+"CONFIG_PACKAGE_luci-app-homeproxy=y"
+"CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
 )
 
 #if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
