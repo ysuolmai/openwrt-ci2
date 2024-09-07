@@ -69,12 +69,12 @@ git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
 
 
 keywords_to_delete=(
-"passwall"
-"v2ray"
-"sing-box"
+#"passwall"
+#"v2ray"
+#"sing-box"
 "ddns"
-"SINGBOX"
-"redmi_ax5=y"
+#"SINGBOX"
+#"redmi_ax5=y"
 "xiaomi_ax3600"
 "xiaomi_ax9000"
 "xiaomi_ax1800"
@@ -84,8 +84,8 @@ keywords_to_delete=(
 "jdcloud_ax6600"
 "linksys_mr7350"
 "uugamebooster"
-"luci-app-homeproxy"
-"CONFIG_TARGET_INITRAMFS"
+#"luci-app-homeproxy"
+#"CONFIG_TARGET_INITRAMFS"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
@@ -115,7 +115,7 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-app-ttyd=y"
 "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
 "CONFIG_PACKAGE_ttyd=y"
-"CONFIG_TARGET_INITRAMFS=n"
+#"CONFIG_TARGET_INITRAMFS=n"
 #"CONFIG_PACKAGE_luci-app-passwall=y"
 #"CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-homeproxy=y"
@@ -143,5 +143,29 @@ done
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
+PKG_PATCH="$GITHUB_WORKSPACE/wrt/package/"
+
+#预置HomeProxy数据
+if [ -d *"homeproxy"* ]; then
+	HP_RULES="surge"
+	HP_PATCH="homeproxy/root/etc/homeproxy"
+
+	chmod +x ./$HP_PATCH/scripts/*
+	rm -rf ./$HP_PATCH/resources/*
+
+	git clone -q --depth=1 --single-branch --branch "release" "https://github.com/Loyalsoldier/surge-rules.git" ./$HP_RULES/
+	cd ./$HP_RULES/ && RES_VER=$(git log -1 --pretty=format:'%s' | grep -o "[0-9]*")
+
+	echo $RES_VER | tee china_ip4.ver china_ip6.ver china_list.ver gfw_list.ver
+	awk -F, '/^IP-CIDR,/{print $2 > "china_ip4.txt"} /^IP-CIDR6,/{print $2 > "china_ip6.txt"}' cncidr.txt
+	sed 's/^\.//g' direct.txt > china_list.txt ; sed 's/^\.//g' gfw.txt > gfw_list.txt
+	mv -f ./{china_*,gfw_list}.{ver,txt} ../$HP_PATCH/resources/
+
+	cd .. && rm -rf ./$HP_RULES/
+
+	cd $PKG_PATCH && echo "homeproxy date has been updated!"
+fi
+
 rm -rf package/feeds/packages/shadowsocks-rust
 cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rust
+find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
