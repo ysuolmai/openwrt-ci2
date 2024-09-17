@@ -84,8 +84,10 @@ keywords_to_delete=(
 "jdcloud_ax6600"
 "linksys_mr7350"
 "uugamebooster"
+"luci-app-wol"
+"luci-i18n-wol-zh-cn"
 #"luci-app-homeproxy"
-#"CONFIG_TARGET_INITRAMFS"
+"CONFIG_TARGET_INITRAMFS"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
