@@ -127,8 +127,8 @@ provided_config_lines=(
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
-  	provided_config_lines+=+=("CONFIG_PACKAGE_hostapd-common=n")
-  	provided_config_lines+=+=("CONFIG_PACKAGE_wpad-openssl=n")
+  	provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n")
+  	provided_config_lines+=("CONFIG_PACKAGE_wpad-openssl=n")
 fi
 
 #if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
