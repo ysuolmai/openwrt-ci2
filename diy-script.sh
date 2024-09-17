@@ -92,8 +92,10 @@ keywords_to_delete=(
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
   	keywords_to_delete+=("usb")
- 	  keywords_to_delete+=("samba")
+ 	keywords_to_delete+=("samba")
   	keywords_to_delete+=("autosamba")
+     	keywords_to_delete+=("wpad")
+        keywords_to_delete+=("hostapd")
 fi
 
 for line in "${keywords_to_delete[@]}"; do
@@ -123,6 +125,11 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-app-homeproxy=y"
 "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
 )
+
+if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
+  	provided_config_lines+=+=("CONFIG_PACKAGE_hostapd-common=n")
+  	provided_config_lines+=+=("CONFIG_PACKAGE_wpad-openssl=n")
+fi
 
 #if [[ $FIRMWARE_TAG != *"NOWIFI"* ]]; then
 #  	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
