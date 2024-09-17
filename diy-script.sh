@@ -78,7 +78,7 @@ keywords_to_delete=(
 "xiaomi_ax3600"
 "xiaomi_ax9000"
 "xiaomi_ax1800"
-"cmiot_ax18"
+#"cmiot_ax18"
 "glinet_gl-ax1800"
 "glinet_gl-axt1800"
 "jdcloud_ax6600"
