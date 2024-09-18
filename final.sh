@@ -1,5 +1,4 @@
 fkeywords_to_delete=(
-"CONFIG_TARGET_INITRAMFS"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
