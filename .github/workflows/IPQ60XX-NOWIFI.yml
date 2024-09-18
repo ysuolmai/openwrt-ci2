@@ -106,9 +106,9 @@ jobs:
 
     - name: Download DL Package(下载DL软件包)
       run: |
+        chmod +x $FINAL_SCRIPT
         cd $OPENWRT_PATH
         make defconfig
-        chmod +x $FINAL_SCRIPT
         $GITHUB_WORKSPACE/$FINAL_SCRIPT
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
