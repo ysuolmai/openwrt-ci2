@@ -66,7 +66,8 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
 git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
 
-
+#gecoosac
+git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
 
 keywords_to_delete=(
 #"passwall"
@@ -124,6 +125,7 @@ provided_config_lines=(
 #"CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y"
 "CONFIG_PACKAGE_luci-app-homeproxy=y"
 "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
+"CONFIG_PACKAGE_luci-app-gecoosac=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
