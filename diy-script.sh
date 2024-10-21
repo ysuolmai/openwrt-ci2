@@ -32,7 +32,7 @@ git clone https://github.com/gngpp/luci-theme-design.git  package/luci-theme-des
 git clone --depth=1 https://github.com/fw876/helloworld.git package/helloworld
 #rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
 #git clone https://github.com/sbwml/openwrt_helloworld package/luci-app-ssr-plus
-git clone --depth=1 https://github.com/VIKINGYFY/homeproxy package/homeproxy
+git clone --depth=1 https://github.com/bulianglin/homeproxy package/homeproxy
 
 # Themes
 #git clone --depth=1 -b 18.06 https://github.com/kiddin9/luci-theme-edge package/luci-theme-edge
