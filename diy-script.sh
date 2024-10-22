@@ -6,14 +6,28 @@
 # TTYD 免登录
 sed -i 's|/bin/login|/bin/login -f root|g' feeds/packages/utils/ttyd/files/ttyd.config
 
-# Git稀疏克隆，只克隆指定目录到本地
-function git_sparse_clone() {
-  branch="$1" repourl="$2" && shift 2
-  git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl
-  repodir=$(echo $repourl | awk -F '/' '{print $(NF)}')
-  cd $repodir && git sparse-checkout set $@
-  mv -f $@ ../package
-  cd .. && rm -rf $repodir
+#安装和更新软件包
+UPDATE_PACKAGE() {
+	local PKG_NAME=$1
+	local PKG_REPO=$2
+	local PKG_BRANCH=$3
+	local PKG_SPECIAL=${4:-} 
+	local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
+
+	rm -rf $(find ../feeds/luci/ ../feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
+
+	if [[ $PKG_REPO == http* ]]; then
+	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO"
+	else
+	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git"
+	fi
+ 
+	if [[ $PKG_SPECIAL == "pkg" ]]; then
+		cp -rf $(find ./$REPO_NAME/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune) ./
+		rm -rf ./$REPO_NAME/
+	elif [[ $PKG_SPECIAL == "name" ]]; then
+		mv -f $REPO_NAME $PKG_NAME
+	fi
 }
 
 
@@ -26,13 +40,9 @@ rm -rf package/feeds/kenzo
 git clone --depth=1 https://github.com/kongfl888/luci-app-adguardhome package/luci-app-adguardhome
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
-git clone https://github.com/gngpp/luci-theme-design.git  package/luci-theme-design
-
 # 科学上网插件
-git clone --depth=1 https://github.com/fw876/helloworld.git package/helloworld
-#rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
-#git clone https://github.com/sbwml/openwrt_helloworld package/luci-app-ssr-plus
-git clone --depth=1 https://github.com/bulianglin/homeproxy package/homeproxy
+UPDATE_PACKAGE "helloworld" "https://github.com/fw876/helloworld.git"
+UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git"
 
 # Themes
 #git clone --depth=1 -b 18.06 https://github.com/kiddin9/luci-theme-edge package/luci-theme-edge
