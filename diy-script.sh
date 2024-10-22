@@ -165,8 +165,6 @@ for line in "${provided_config_lines[@]}"; do
 done
 
 
-./scripts/feeds update -a
-./scripts/feeds install -a
 
 PKG_PATCH="$GITHUB_WORKSPACE/wrt/package/"
 
