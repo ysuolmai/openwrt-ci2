@@ -106,10 +106,17 @@ keywords_to_delete=(
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
   	keywords_to_delete+=("usb")
- 	keywords_to_delete+=("samba")
-  	keywords_to_delete+=("autosamba")
      	keywords_to_delete+=("wpad")
         keywords_to_delete+=("hostapd")
+fi
+if [[ $FIRMWARE_TAG != *"EMMC"* ]]; then
+ 	keywords_to_delete+=("samba")
+  	keywords_to_delete+=("autosamba")
+else
+	keywords_to_delete+=("cmiot_ax18")
+ 	keywords_to_delete+=("qihoo_v6")
+  	keywords_to_delete+=("redmi_ax5=y")
+   	keywords_to_delete+=("zn_m2")
 fi
 
 for line in "${keywords_to_delete[@]}"; do
@@ -147,7 +154,8 @@ provided_config_lines=(
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
   	provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n")
   	provided_config_lines+=("CONFIG_PACKAGE_wpad-openssl=n")
-else
+fi
+if [[ $FIRMWARE_TAG == *"EMMC"* ]]; then
   	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
   	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y")
    	provided_config_lines+=("CONFIG_PACKAGE_luci-app-docker=y")
