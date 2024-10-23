@@ -137,11 +137,11 @@ provided_config_lines=(
 "CONFIG_PACKAGE_luci-app-homeproxy=y"
 "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
 #"CONFIG_PACKAGE_luci-app-gecoosac=y"
-#"CONFIG_PACKAGE_luci-app-ddns-go=y"
-#"CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
-"CONFIG_PACKAGE_luci-app-lucky=y"
-"CONFIG_PACKAGE_luci-i18n-lucky-zh-cn=y"
-"CONFIG_PACKAGE_lucky=y"
+"CONFIG_PACKAGE_luci-app-ddns-go=y"
+"CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
+#"CONFIG_PACKAGE_luci-app-lucky=y"
+#"CONFIG_PACKAGE_luci-i18n-lucky-zh-cn=y"
+#"CONFIG_PACKAGE_lucky=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
