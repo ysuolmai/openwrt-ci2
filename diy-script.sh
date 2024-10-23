@@ -83,84 +83,51 @@ git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
 git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
 
 keywords_to_delete=(
-"xiaomi_ax3600"
-"xiaomi_ax9000"
-"xiaomi_ax1800"
-"glinet"
-"jdcloud_ax6600"
-"mr7350"
-"uugamebooster"
-"luci-app-wol"
-"luci-i18n-wol-zh-cn"
-"CONFIG_TARGET_INITRAMFS"
+    "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
+    "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS"
 )
 
-if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
-  	keywords_to_delete+=("usb")
-     	keywords_to_delete+=("wpad")
-        keywords_to_delete+=("hostapd")
-fi
-if [[ $FIRMWARE_TAG != *"EMMC"* ]]; then
- 	keywords_to_delete+=("samba")
-  	keywords_to_delete+=("autosamba")
-else
-	keywords_to_delete+=("cmiot_ax18")
- 	keywords_to_delete+=("qihoo_v6")
-  	keywords_to_delete+=("redmi_ax5=y")
-   	keywords_to_delete+=("zn_m2")
-fi
+[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
+[[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "jdcloud_ax1800-pro" "redmi_ax5-jdcloud")
+[[ $FIRMWARE_TAG == *"EMMC"* ]] && keywords_to_delete+=("cmiot_ax18" "qihoo_v6" "redmi_ax5=y" "zn_m2")
 
-for line in "${keywords_to_delete[@]}"; do
-    sed -i "/$line/d" ./.config
+for keyword in "${keywords_to_delete[@]}"; do
+    sed -i "/$keyword/d" ./.config
 done
 
+# Configuration lines to append to .config
 provided_config_lines=(
-#"CONFIG_PACKAGE_luci-app-ssr-plus=y"
-#"CONFIG_PACKAGE_luci-i18n-ssr-plus-zh-cn=y"
-"CONFIG_PACKAGE_luci-app-zerotier=y"
-"CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
-"CONFIG_PACKAGE_luci-app-adguardhome=y"
-"CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
-"CONFIG_PACKAGE_luci-app-poweroff=y"
-"CONFIG_PACKAGE_luci-i18n-poweroff-zh-cn=y"
-"CONFIG_PACKAGE_cpufreq=y"
-"CONFIG_PACKAGE_luci-app-cpufreq=y"
-"CONFIG_PACKAGE_luci-i18n-cpufreq-zh-cn=y"
-"CONFIG_PACKAGE_luci-app-ttyd=y"
-"CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
-"CONFIG_PACKAGE_ttyd=y"
-#"CONFIG_TARGET_INITRAMFS=n"
-#"CONFIG_PACKAGE_luci-app-passwall=y"
-#"CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y"
-"CONFIG_PACKAGE_luci-app-homeproxy=y"
-"CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
-#"CONFIG_PACKAGE_luci-app-gecoosac=y"
-"CONFIG_PACKAGE_luci-app-ddns-go=y"
-"CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
-#"CONFIG_PACKAGE_luci-app-lucky=y"
-#"CONFIG_PACKAGE_luci-i18n-lucky-zh-cn=y"
-#"CONFIG_PACKAGE_lucky=y"
+    "CONFIG_PACKAGE_luci-app-zerotier=y"
+    "CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-adguardhome=y"
+    "CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-poweroff=y"
+    "CONFIG_PACKAGE_luci-i18n-poweroff-zh-cn=y"
+    "CONFIG_PACKAGE_cpufreq=y"
+    "CONFIG_PACKAGE_luci-app-cpufreq=y"
+    "CONFIG_PACKAGE_luci-i18n-cpufreq-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-ttyd=y"
+    "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
+    "CONFIG_PACKAGE_ttyd=y"
+    "CONFIG_PACKAGE_luci-app-homeproxy=y"
+    "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-ddns-go=y"
+    "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
 )
 
-if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
-  	provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n")
-  	provided_config_lines+=("CONFIG_PACKAGE_wpad-openssl=n")
-fi
-if [[ $FIRMWARE_TAG == *"EMMC"* ]]; then
-  	provided_config_lines+=("CONFIG_PACKAGE_luci-app-diskman=y")
-  	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-luci-app-diskman=y")
-   	provided_config_lines+=("CONFIG_PACKAGE_luci-app-docker=y")
-    	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y")
-    	provided_config_lines+=("CONFIG_PACKAGE_luci-app-dockerman=y")
-    	provided_config_lines+=("CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y")
-fi
+[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
+[[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
+    "CONFIG_PACKAGE_luci-app-diskman=y"
+    "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-docker=y"
+    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-dockerman=y"
+    "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y"
+)
 
-# Path to the .config file
-config_file_path=".config" 
-
-# Append lines to the .config file
+# Append configuration lines to .config
 for line in "${provided_config_lines[@]}"; do
-    echo "$line" >> "$config_file_path"
+    echo "$line" >> .config
 done
 
 
