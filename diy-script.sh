@@ -83,24 +83,15 @@ git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
 git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
 
 keywords_to_delete=(
-#"passwall"
-#"v2ray"
-#"sing-box"
-"ddns"
-#"SINGBOX"
-#"redmi_ax5=y"
 "xiaomi_ax3600"
 "xiaomi_ax9000"
 "xiaomi_ax1800"
-#"cmiot_ax18"
-"glinet_gl-ax1800"
-"glinet_gl-axt1800"
+"glinet"
 "jdcloud_ax6600"
-"linksys_mr7350"
+"mr7350"
 "uugamebooster"
 "luci-app-wol"
 "luci-i18n-wol-zh-cn"
-#"luci-app-homeproxy"
 "CONFIG_TARGET_INITRAMFS"
 )
 
