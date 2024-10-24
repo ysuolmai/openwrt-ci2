@@ -17,9 +17,9 @@ UPDATE_PACKAGE() {
 	rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
 
 	if [[ $PKG_REPO == http* ]]; then
-	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO"
+	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO" package/$PKG_NAME
 	else
-	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git"
+	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" package/$PKG_NAME
 	fi
  
 	if [[ $PKG_SPECIAL == "pkg" ]]; then
