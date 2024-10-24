@@ -82,6 +82,9 @@ git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
 #lucky
 git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
 
+#alist
+UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist" "main"
+
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
     "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns"
@@ -113,6 +116,8 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-ddns-go=y"
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-alist=y"
+    "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
 )
 
 [[ $FIRMWARE_TAG == *"NOWIFI"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
