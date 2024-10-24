@@ -14,7 +14,7 @@ UPDATE_PACKAGE() {
 	local PKG_SPECIAL=${4:-} 
 	local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
 
-	rm -rf $(find ../feeds/luci/ ../feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
+	rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
 
 	if [[ $PKG_REPO == http* ]]; then
 	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO"
