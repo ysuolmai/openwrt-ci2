@@ -41,8 +41,8 @@ git clone --depth=1 https://github.com/kongfl888/luci-app-adguardhome package/lu
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
 # 科学上网插件
-UPDATE_PACKAGE "helloworld" "https://github.com/fw876/helloworld.git"
-UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git"
+UPDATE_PACKAGE "helloworld" "https://github.com/fw876/helloworld.git" "master"
+UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git" "master"
 
 # Themes
 #git clone --depth=1 -b 18.06 https://github.com/kiddin9/luci-theme-edge package/luci-theme-edge
