@@ -92,7 +92,7 @@ keywords_to_delete=(
     "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns"
 )
 
-[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
+[[ $FIRMWARE_TAG == *"nowifi"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
 [[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "jdcloud_ax1800-pro" "redmi_ax5-jdcloud")
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && keywords_to_delete+=("cmiot_ax18" "qihoo_v6" "redmi_ax5=y" "zn_m2")
 
@@ -122,7 +122,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
 )
 
-[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
+[[ $FIRMWARE_TAG == *"nowifi"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
     "CONFIG_PACKAGE_luci-app-diskman=y"
     "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
