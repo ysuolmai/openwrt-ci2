@@ -167,11 +167,12 @@ if [ -d *"homeproxy"* ]; then
 	cd $PKG_PATCH && echo "homeproxy date has been updated!"
 fi
 
+./scripts/feeds update -a
+./scripts/feeds install -a
+
 rm -rf package/feeds/packages/shadowsocks-rust
 cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rust
 
-./scripts/feeds update -a
-./scripts/feeds install -a
 find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
 
 
