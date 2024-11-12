@@ -174,5 +174,7 @@ rm -rf package/feeds/packages/shadowsocks-rust
 cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rust
 
 find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
+sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
+
 
 
