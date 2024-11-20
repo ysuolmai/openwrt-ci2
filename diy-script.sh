@@ -177,5 +177,8 @@ cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rus
 find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
 sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
 
+find ./ -name "cascade.css" -exec sed -i 's/#5e72e4/#6fa49a/g; s/#483d8b/#6fa49a/g' {} \;
+find ./ -name "dark.css" -exec sed -i 's/#5e72e4/#6fa49a/g; s/#483d8b/#6fa49a/g' {} \;
+
 
 
