@@ -41,9 +41,9 @@ rm -rf package/feeds/kenzo
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
 # 科学上网插件
-UPDATE_PACKAGE "helloworld" "https://github.com/fw876/helloworld.git" "master"
+#UPDATE_PACKAGE "helloworld" "https://github.com/fw876/helloworld.git" "master"
 UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git" "master"
-UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
+#UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 # Themes
 #git clone --depth=1 -b 18.06 https://github.com/kiddin9/luci-theme-edge package/luci-theme-edge
 #git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
@@ -73,14 +73,14 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 #chmod 755 package/luci-app-onliner/root/usr/share/onliner/setnlbw.sh
 
 #tailscale
-sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
-git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
+#sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
+#git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
 
 #gecoosac
-git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
+#git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
 
 #lucky
-git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
+#git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
 
 #alist
 UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
@@ -90,6 +90,7 @@ UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.gi
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
 
+UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
@@ -175,8 +176,8 @@ if [ -d *"homeproxy"* ]; then
 	cd $PKG_PATCH && echo "homeproxy date has been updated!"
 fi
 
-./scripts/feeds update -a
-./scripts/feeds install -a
+#./scripts/feeds update -a
+#./scripts/feeds install -a
 
 rm -rf package/feeds/packages/shadowsocks-rust
 cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rust
