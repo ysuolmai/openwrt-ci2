@@ -87,10 +87,15 @@ UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
 #diskman
 UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.git" "master"
 
+#speedtest
+UPDATE_PACKAGE "netspeedtest" "https://github.com/sirpdboy/netspeedtest.git" "master"
+
+
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
     "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "apk"
 )
+
 
 [[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
 [[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "jdcloud_ax1800-pro" "redmi_ax5-jdcloud")
@@ -121,6 +126,8 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-alist=y"
     "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-argon-config=y"
+    "CONFIG_PACKAGE_luci-app-netspeedtest=y"
+
 )
 
 [[ $FIRMWARE_TAG == *"NOWIFI"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
