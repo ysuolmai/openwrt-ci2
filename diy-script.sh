@@ -88,7 +88,7 @@ UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
 UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.git" "master"
 
 #speedtest
-UPDATE_PACKAGE "netspeedtest" "https://github.com/sirpdboy/netspeedtest.git" "master"
+UPDATE_PACKAGE "netspeedtest" "https://github.com/muink/luci-app-netspeedtest.git" "master"
 
 
 keywords_to_delete=(
