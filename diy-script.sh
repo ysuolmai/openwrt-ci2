@@ -123,8 +123,6 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-ddns-go=y"
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
-    "CONFIG_PACKAGE_luci-app-alist=y"
-    "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-argon-config=y"
     "CONFIG_PACKAGE_luci-app-netspeedtest=y"
 
@@ -138,6 +136,8 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-dockerman=y"
     "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-alist=y"
+    "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
 )
 
 # Append configuration lines to .config
