@@ -127,11 +127,6 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-ddns-go=y"
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-argon-config=y"
-    #"CONFIG_PACKAGE_luci-app-netspeedtest=y"
-    "CONFIG_PACKAGE_kmod-usb-net=y"
-    "CONFIG_PACKAGE_kmod-usb-net-rndis=y"
-    "CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y"
-    "CONFIG_PACKAGE_usbutils=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
