@@ -128,7 +128,10 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-argon-config=y"
     #"CONFIG_PACKAGE_luci-app-netspeedtest=y"
-
+    "CONFIG_PACKAGE_kmod-usb-net=y"
+    "CONFIG_PACKAGE_kmod-usb-net-rndis=y"
+    "CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y"
+    "CONFIG_PACKAGE_usbutils=y"
 )
 
 [[ $FIRMWARE_TAG == *"NOWIFI"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
@@ -147,13 +150,6 @@ provided_config_lines=(
 for line in "${provided_config_lines[@]}"; do
     echo "$line" >> .config
 done
-
-#[[ $FIRMWARE_TAG != *"EMMC"* ]] && sed -i '/#include/a #include "ipq6018-256m.dtsi"' target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq6018-xiaomi.dtsi
-#sed -i '/#include "ipq6018-cp-cpu.dtsi"/d' target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq6018-xiaomi.dtsi
-#[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && {
-#    sed -i 's/reg = <0x0 0x4ab00000 0x0 0x02800000>;/reg = <0x0 0x4ab00000 0x0 0x00000400>;/g' target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq6018-256m.dtsi
-#    sed -i 's/reg = <0x0 0x4ab00000 0x0 0x03700000>;/reg = <0x0 0x4ab00000 0x0 0x00000400>;/g' target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq6018-512m.dtsi
-#}
 
 PKG_PATCH="$GITHUB_WORKSPACE/wrt/package/"
 
@@ -180,9 +176,6 @@ fi
 
 #./scripts/feeds update -a
 #./scripts/feeds install -a
-
-rm -rf package/feeds/packages/shadowsocks-rust
-cp -r package/helloworld/shadowsocks-rust package/feeds/packages/shadowsocks-rust
 
 find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
 sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
