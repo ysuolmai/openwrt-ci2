@@ -134,7 +134,20 @@ provided_config_lines=(
     "CONFIG_PACKAGE_usbutils=y"
 )
 
-[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && provided_config_lines+=("CONFIG_PACKAGE_hostapd-common=n" "CONFIG_PACKAGE_wpad-openssl=n")
+if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
+    provided_config_lines+=(
+        "CONFIG_PACKAGE_hostapd-common=n"
+        "CONFIG_PACKAGE_wpad-openssl=n"
+    )
+else
+    provided_config_lines+=(
+        "CONFIG_PACKAGE_kmod-usb-net=y"
+        "CONFIG_PACKAGE_kmod-usb-net-rndis=y"
+        "CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y"
+        "CONFIG_PACKAGE_usbutils=y"
+    )
+fi
+
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
     "CONFIG_PACKAGE_luci-app-diskman=y"
     "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
