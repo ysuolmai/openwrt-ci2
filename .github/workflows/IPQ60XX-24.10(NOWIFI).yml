@@ -107,7 +107,11 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+        
+    - name: run DIY script
+      run: |
         chmod +x ${DIY_SCRIPT}
+        cd $OPENWRT_PATH
         ${GITHUB_WORKSPACE}/${DIY_SCRIPT}
         
     - name: Compile Firmware(开始编译固件)
