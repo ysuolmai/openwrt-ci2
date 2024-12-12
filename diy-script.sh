@@ -183,8 +183,8 @@ if [ -d *"homeproxy"* ]; then
 	cd $PKG_PATCH && echo "homeproxy date has been updated!"
 fi
 
-#./scripts/feeds update -a
-#./scripts/feeds install -a
+./scripts/feeds update -a
+./scripts/feeds install -a
 
 #修复文件
 find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
