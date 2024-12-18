@@ -100,6 +100,12 @@ jobs:
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
 
+    - name: run DIY script
+      run: |
+        chmod +x ${DIY_SCRIPT}
+        cd $OPENWRT_PATH
+        ${GITHUB_WORKSPACE}/${DIY_SCRIPT}
+        
     - name: Download DL Package(下载DL软件包)
       run: |
         cd $OPENWRT_PATH
@@ -108,11 +114,7 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         
-    - name: run DIY script
-      run: |
-        chmod +x ${DIY_SCRIPT}
-        cd $OPENWRT_PATH
-        ${GITHUB_WORKSPACE}/${DIY_SCRIPT}
+
         
     - name: Compile Firmware(开始编译固件)
       id: compile
