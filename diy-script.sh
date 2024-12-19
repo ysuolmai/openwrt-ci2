@@ -127,6 +127,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-ddns-go=y"
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-argon-config=y"
+    "CONFIG_PACKAGE_nano=y"
     "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
 )
 
@@ -153,6 +154,8 @@ fi
     "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-alist=y"
     "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
+    "CONFIG_PACKAGE_fdisk=y"
+    "CONFIG_PACKAGE_parted=y"
 )
 
 # Append configuration lines to .config
