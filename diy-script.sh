@@ -44,7 +44,8 @@ git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/
 
 # 科学上网插件
 #UPDATE_PACKAGE "helloworld" "https://github.com/fw876/helloworld.git" "master"
-UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git" "master"
+#UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git" "master"
+UPDATE_PACKAGE "homeproxy" "https://github.com/VIKINGYFY/homeproxy.git" "main"
 #UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 # Themes
 #git clone --depth=1 -b 18.06 https://github.com/kiddin9/luci-theme-edge package/luci-theme-edge
@@ -87,7 +88,16 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 #alist
 UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
 #diskman
-UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.git" "master"
+#UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.git" "master"
+rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname luci-app-diskman -prune)
+rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname parted -prune)
+mkdir -p luci-app-diskman && \
+wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/applications/luci-app-diskman/Makefile -O luci-app-diskman/Makefile
+mkdir -p parted && \
+wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -O parted/Makefile
+
+
+
 
 #speedtest
 #UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
