@@ -8,7 +8,7 @@ on:
 env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
   REPO_BRANCH: kernel-6.12
-  CONFIG_FILE: configs/ipq807x-6.12-wifi.config
+  CONFIG_FILE: configs/ipq807x-6.12.config
   DIY_SCRIPT: diy-script.sh
   CLASH_KERNEL: amd64
   CACHE_TOOLCHAIN: true
