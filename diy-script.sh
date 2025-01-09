@@ -176,8 +176,6 @@ sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
 #find ./ -path "*/usbutils/Makefile" -exec sed -i 's|$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/lsusb $(1)/usr/bin/|$(INSTALL_BIN) -o $(PKG_INSTALL_DIR)/usr/bin/lsusb $(1)/usr/bin/|g' {} \;
 
 
-find ./ -name "cascade.css" -exec sed -i 's/#5e72e4/#6fa49a/g; s/#483d8b/#6fa49a/g' {} \;
-find ./ -name "dark.css" -exec sed -i 's/#5e72e4/#6fa49a/g; s/#483d8b/#6fa49a/g' {} \;
-
+install -Dm755 "$BASE_PATH/scripts/99_set_argon_primary.sh" "$BUILD_DIR/package/base-files/files/etc/uci-defaults/99_set_argon_primary"
 
 
