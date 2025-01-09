@@ -176,6 +176,6 @@ sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
 #find ./ -path "*/usbutils/Makefile" -exec sed -i 's|$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/lsusb $(1)/usr/bin/|$(INSTALL_BIN) -o $(PKG_INSTALL_DIR)/usr/bin/lsusb $(1)/usr/bin/|g' {} \;
 
 
-install -Dm755 "$BASE_PATH/scripts/99_set_argon_primary.sh" "$BUILD_DIR/package/base-files/files/etc/uci-defaults/99_set_argon_primary"
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
 
 
