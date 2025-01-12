@@ -42,7 +42,7 @@ rm -rf package/feeds/kenzo
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
 # 科学上网插件
-#UPDATE_PACKAGE "homeproxy" "https://github.com/VIKINGYFY/homeproxy.git" "main"
+UPDATE_PACKAGE "homeproxy" "https://github.com/VIKINGYFY/homeproxy.git" "main"
 #UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 # Themes
 #UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "openwrt-24.10"
