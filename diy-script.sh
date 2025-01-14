@@ -121,6 +121,8 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-argon-config=y"
     "CONFIG_PACKAGE_nano=y"
     "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
+    "CONFIG_PACKAGE_luci-app-netspeedtest=y"
+
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
