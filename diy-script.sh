@@ -170,5 +170,5 @@ sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
 
 
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
-
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/991_set-network.sh" "package/base-files/files/etc/uci-defaults/991_set-network.sh"
 
