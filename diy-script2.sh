@@ -42,9 +42,8 @@ rm -rf package/feeds/kenzo
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
 # 科学上网插件
-UPDATE_PACKAGE "homeproxy" "https://github.com/bulianglin/homeproxy.git" "main"
+#UPDATE_PACKAGE "homeproxy" "https://github.com/VIKINGYFY/homeproxy.git" "main"
 #UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
-UPDATE_PACKAGE "mihomo" "morytyann/OpenWrt-mihomo" "main"
 # Themes
 #UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "openwrt-24.10"
 
@@ -82,7 +81,8 @@ wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Mak
 
 
 #speedtest
-#UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
+UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
+UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
 
 UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 
@@ -105,8 +105,8 @@ done
 provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-zerotier=y"
     "CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
-    "CONFIG_PACKAGE_luci-app-adguardhome=y"
-    "CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
+    #"CONFIG_PACKAGE_luci-app-adguardhome=y"
+    #"CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-poweroff=y"
     "CONFIG_PACKAGE_luci-i18n-poweroff-zh-cn=y"
     "CONFIG_PACKAGE_cpufreq=y"
@@ -122,6 +122,8 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-argon-config=y"
     "CONFIG_PACKAGE_nano=y"
     "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
+    "CONFIG_PACKAGE_luci-app-netspeedtest=y"
+
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
@@ -139,18 +141,16 @@ else
 fi
 
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
-    "CONFIG_PACKAGE_luci-app-diskman=y"
-    "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
-    "CONFIG_PACKAGE_luci-app-docker=y"
-    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
-    "CONFIG_PACKAGE_luci-app-dockerman=y"
-    "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y"
+    #"CONFIG_PACKAGE_luci-app-diskman=y"
+    #"CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-docker=m"
+    #"CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-dockerman=m"
+    #"CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-alist=y"
     "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
     "CONFIG_PACKAGE_fdisk=y"
     "CONFIG_PACKAGE_parted=y"
-    "CONFIG_PACKAGE_luci-app-diskman=y"
-    "CONFIG_PACKAGE_luci-app-mihomo=y"
 )
 
 # Append configuration lines to .config
@@ -170,5 +170,3 @@ sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
 
 
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
-
-
