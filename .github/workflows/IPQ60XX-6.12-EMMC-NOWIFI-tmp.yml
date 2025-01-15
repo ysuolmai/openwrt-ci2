@@ -1,5 +1,5 @@
 
-name: IPQ60XX-6.12-EMMC-NOWIFI-tmp
+name: IPQ60XX-6.12-EMMC-NOWIFI-NoDocker
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ env:
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: IPQ60XX-6.12-EMMC-NOWIFI-tmp
+  FIRMWARE_TAG: IPQ60XX-6.12-EMMC-NOWIFI-NoDocker
   TZ: Asia/Shanghai
 
 jobs:
