@@ -70,8 +70,7 @@ UPDATE_PACKAGE "luci-app-rclone" "kenzok8/small-package" "main" "pkg"
 UPDATE_PACKAGE "luci-app-daed" "kenzok8/small-package" "main" "pkg"
 UPDATE_PACKAGE "luci-app-dae" "kenzok8/small-package" "main" "pkg"
 UPDATE_PACKAGE "luci-app-haproxy-tcp" "kenzok8/small-package" "main" "pkg"
-UPDATE_PACKAGE "luci-app-openclash" "kenzok8/small-package" "main" "pkg"
-UPDATE_PACKAGE "luci-app-passwall" "kenzok8/small-package" "main" "pkg"
+
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
@@ -150,15 +149,6 @@ fi
     "CONFIG_PACKAGE_iptables-mod-fullconenat=y"
     "CONFIG_PACKAGE_libip4tc=y"
     "CONFIG_PACKAGE_libip6tc=y"
-    "CONFIG_PACKAGE_luci-app-passwall=y"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Simple_Obfs=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_SingBox=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan_Plus=n"
-    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=n"
 )
 
 # Append configuration lines to .config
