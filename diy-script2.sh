@@ -11,32 +11,40 @@ UPDATE_PACKAGE() {
 	local PKG_NAME=$1
 	local PKG_REPO=$2
 	local PKG_BRANCH=$3
-	local PKG_SPECIAL=${4:-} 
-	
+	local PKG_SPECIAL=$4
 
-	rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
+	# 清理旧的包
+	read -ra PKG_NAMES <<< "$PKG_NAME"  # 将PKG_NAME按空格分割成数组
+	for NAME in "${PKG_NAMES[@]}"; do
+		rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname "*$NAME*" -prune)
+	done
 
+	# 克隆仓库
 	if [[ $PKG_REPO == http* ]]; then
-	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO" package/$PKG_NAME
-	        local REPO_NAME=$(echo $PKG_REPO | awk -F '/' '{gsub(/\.git$/, "", $NF); print $NF}')
+		local REPO_NAME=$(echo $PKG_REPO | awk -F '/' '{gsub(/\.git$/, "", $NF); print $NF}')
+		git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO" package/$REPO_NAME
 	else
-	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" package/$PKG_NAME
-	        local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
+		local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
+		git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" package/$REPO_NAME
 	fi
- 
-	if [[ $PKG_SPECIAL == "pkg" ]]; then
-		cp -rf $(find ./$REPO_NAME/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune) ./
-		rm -rf ./$REPO_NAME/
-	elif [[ $PKG_SPECIAL == "name" ]]; then
-		mv -f $REPO_NAME $PKG_NAME
-	fi
+
+	# 根据 PKG_SPECIAL 处理包
+	case "$PKG_SPECIAL" in
+		"pkg")
+			# 提取每个包
+			for NAME in "${PKG_NAMES[@]}"; do
+				cp -rf $(find ./package/$REPO_NAME/*/ -maxdepth 3 -type d -iname "*$NAME*" -prune) ./package/
+			done
+			# 删除剩余的包
+			rm -rf ./package/$REPO_NAME/
+			;;
+		"name")
+			# 重命名包
+			mv -f ./package/$REPO_NAME ./package/$PKG_NAME
+			;;
+	esac
 }
 
-
-#删掉垃圾源
-sed -i "/kenzok8/d" "feeds.conf.default"
-rm -rf package/feeds/small
-rm -rf package/feeds/kenzo
 
 # 添加额外插件
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
@@ -68,17 +76,16 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 
 #alist
 UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
-#diskman
-#UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.git" "master"
-rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname luci-app-diskman -prune)
-rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname parted -prune)
-mkdir -p luci-app-diskman && \
-wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/applications/luci-app-diskman/Makefile -O luci-app-diskman/Makefile
-mkdir -p parted && \
-wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -O parted/Makefile
 
-
-
+#small-package
+UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
+        naiveproxy shadowsocks-rust sing-box v2ray-core v2ray-geodata v2ray-geoview v2ray-plugin \
+        tuic-client chinadns-ng ipt2socks tcping trojan-plus simple-obfs shadowsocksr-libev \
+        luci-app-passwall alist luci-app-alist smartdns luci-app-smartdns v2dat mosdns luci-app-mosdns \
+        taskd luci-lib-xterm luci-lib-taskd \
+        luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
+        luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
+        luci-app-mihomo luci-app-amlogic" "kenzok8/small-package" "main" "pkg"
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
@@ -88,7 +95,7 @@ UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adgu
 
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
-    "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB"
+    "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB" "mihomo"
 )
 
 
@@ -105,8 +112,8 @@ done
 provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-zerotier=y"
     "CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
-    #"CONFIG_PACKAGE_luci-app-adguardhome=y"
-    #"CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-adguardhome=y"
+    "CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-poweroff=y"
     "CONFIG_PACKAGE_luci-i18n-poweroff-zh-cn=y"
     "CONFIG_PACKAGE_cpufreq=y"
@@ -123,7 +130,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_nano=y"
     "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
     "CONFIG_PACKAGE_luci-app-netspeedtest=y"
-
+    "CONFIG_PACKAGE_luci-app-vlmcsd=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
@@ -141,8 +148,8 @@ else
 fi
 
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
-    #"CONFIG_PACKAGE_luci-app-diskman=y"
-    #"CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-diskman=y"
+    "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-docker=m"
     #"CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-dockerman=m"
@@ -151,6 +158,12 @@ fi
     "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
     "CONFIG_PACKAGE_fdisk=y"
     "CONFIG_PACKAGE_parted=y"
+    "CONFIG_PACKAGE_iptables-mod-extra=y"
+    "CONFIG_PACKAGE_ip6tables-nft=y"
+    "CONFIG_PACKAGE_ip6tables-mod-fullconenat=y"
+    "CONFIG_PACKAGE_iptables-mod-fullconenat=y"
+    "CONFIG_PACKAGE_libip4tc=y"
+    "CONFIG_PACKAGE_libip6tc=y"
 )
 
 # Append configuration lines to .config
@@ -164,9 +177,5 @@ done
 #修复文件
 find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
 sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
-#find ./ -path "*/usbutils/Makefile" -exec sed -i '/$(INSTALL_BIN) $(PKG_INSTALL_DIR)\/usr\/bin\/lsusb $(1)\/usr\/bin\//i rm -f $(1)/usr/bin/lsusb' {} \;
-#find ./ -path "*/usbutils/Makefile" -exec sed -i '/$(INSTALL_BIN) $(PKG_INSTALL_DIR)\/usr\/bin\/lsusb $(1)\/usr\/bin\//i \\	rm -f $(1)/usr/bin/lsusb' {} \;
-#find ./ -path "*/usbutils/Makefile" -exec sed -i 's|$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/lsusb $(1)/usr/bin/|$(INSTALL_BIN) -o $(PKG_INSTALL_DIR)/usr/bin/lsusb $(1)/usr/bin/|g' {} \;
-
 
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
