@@ -33,11 +33,6 @@ UPDATE_PACKAGE() {
 }
 
 
-#删掉垃圾源
-sed -i "/kenzok8/d" "feeds.conf.default"
-rm -rf package/feeds/small
-rm -rf package/feeds/kenzo
-
 # 添加额外插件
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
@@ -68,17 +63,16 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 
 #alist
 UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
-#diskman
-#UPDATE_PACKAGE "luci-app-diskman" "https://github.com/lisaac/luci-app-diskman.git" "master"
-rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname luci-app-diskman -prune)
-rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname parted -prune)
-mkdir -p luci-app-diskman && \
-wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/applications/luci-app-diskman/Makefile -O luci-app-diskman/Makefile
-mkdir -p parted && \
-wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -O parted/Makefile
 
-
-
+#small-package
+UPDATE_PACKAGE "luci-app-vlmcsd" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-rclone" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-daed" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-dae" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-haproxy-tcp" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-mihomo" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-openclash" "kenzok8/small-package" "main" "pkg"
+UPDATE_PACKAGE "luci-app-passwall" "kenzok8/small-package" "main" "pkg"
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
@@ -123,7 +117,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_nano=y"
     "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
     "CONFIG_PACKAGE_luci-app-netspeedtest=y"
-
+    "CONFIG_PACKAGE_luci-app-vlmcsd=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
@@ -141,8 +135,8 @@ else
 fi
 
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
-    #"CONFIG_PACKAGE_luci-app-diskman=y"
-    #"CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-diskman=y"
+    "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-docker=y"
     "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-dockerman=y"
@@ -151,6 +145,21 @@ fi
     "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
     "CONFIG_PACKAGE_fdisk=y"
     "CONFIG_PACKAGE_parted=y"
+    "CONFIG_PACKAGE_iptables-mod-extra=y"
+    "CONFIG_PACKAGE_ip6tables-nft=y"
+    "CONFIG_PACKAGE_ip6tables-mod-fullconenat=y"
+    "CONFIG_PACKAGE_iptables-mod-fullconenat=y"
+    "CONFIG_PACKAGE_libip4tc=y"
+    "CONFIG_PACKAGE_libip6tc=y"
+    "CONFIG_PACKAGE_luci-app-passwall=y"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Simple_Obfs=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_SingBox=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan_Plus=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=n"
 )
 
 # Append configuration lines to .config
