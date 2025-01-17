@@ -11,25 +11,38 @@ UPDATE_PACKAGE() {
 	local PKG_NAME=$1
 	local PKG_REPO=$2
 	local PKG_BRANCH=$3
-	local PKG_SPECIAL=${4:-} 
-	 
-	rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
+	local PKG_SPECIAL=$4
 
+	# 清理旧的包
+	read -ra PKG_NAMES <<< "$PKG_NAME"  # 将PKG_NAME按空格分割成数组
+	for NAME in "${PKG_NAMES[@]}"; do
+		rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname "*$NAME*" -prune)
+	done
+
+	# 克隆仓库
 	if [[ $PKG_REPO == http* ]]; then
- 		local REPO_NAME=$(echo $PKG_REPO | awk -F '/' '{gsub(/\.git$/, "", $NF); print $NF}')
-	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO" package/$REPO_NAME
+		local REPO_NAME=$(echo $PKG_REPO | awk -F '/' '{gsub(/\.git$/, "", $NF); print $NF}')
+		git clone --depth=1 --single-branch --branch $PKG_BRANCH "$PKG_REPO" package/$REPO_NAME
 	else
- 		local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
-	        git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" package/$REPO_NAME
+		local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
+		git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" package/$REPO_NAME
 	fi
- 
-	if [[ $PKG_SPECIAL == "pkg" ]]; then
-		cp -rf $(find ./package/$REPO_NAME/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune) ./package/
-		rm -rf ./package/$REPO_NAME/
-	elif [[ $PKG_SPECIAL == "name" ]]; then
-		mv -f ./package/$REPO_NAME ./package/$PKG_NAME
-	fi
- 
+
+	# 根据 PKG_SPECIAL 处理包
+	case "$PKG_SPECIAL" in
+		"pkg")
+			# 提取每个包
+			for NAME in "${PKG_NAMES[@]}"; do
+				cp -rf $(find ./package/$REPO_NAME/*/ -maxdepth 3 -type d -iname "*$NAME*" -prune) ./package/
+			done
+			# 删除剩余的包
+			rm -rf ./package/$REPO_NAME/
+			;;
+		"name")
+			# 重命名包
+			mv -f ./package/$REPO_NAME ./package/$PKG_NAME
+			;;
+	esac
 }
 
 
@@ -65,12 +78,14 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
 
 #small-package
-UPDATE_PACKAGE "luci-app-vlmcsd" "kenzok8/small-package" "main" "pkg"
-#UPDATE_PACKAGE "luci-app-rclone" "kenzok8/small-package" "main" "pkg"
-#UPDATE_PACKAGE "luci-app-daed" "kenzok8/small-package" "main" "pkg"
-#UPDATE_PACKAGE "luci-app-dae" "kenzok8/small-package" "main" "pkg"
-#UPDATE_PACKAGE "luci-app-haproxy-tcp" "kenzok8/small-package" "main" "pkg"
-
+UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
+        naiveproxy shadowsocks-rust sing-box v2ray-core v2ray-geodata v2ray-geoview v2ray-plugin \
+        tuic-client chinadns-ng ipt2socks tcping trojan-plus simple-obfs shadowsocksr-libev \
+        luci-app-passwall alist luci-app-alist smartdns luci-app-smartdns v2dat mosdns luci-app-mosdns \
+        taskd luci-lib-xterm luci-lib-taskd \
+        luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
+        luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
+        luci-app-mihomo luci-app-amlogic" "kenzok8/small-package" "main" "pkg"
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
