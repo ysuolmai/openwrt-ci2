@@ -66,10 +66,10 @@ UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
 
 #small-package
 UPDATE_PACKAGE "luci-app-vlmcsd" "kenzok8/small-package" "main" "pkg"
-UPDATE_PACKAGE "luci-app-rclone" "kenzok8/small-package" "main" "pkg"
-UPDATE_PACKAGE "luci-app-daed" "kenzok8/small-package" "main" "pkg"
-UPDATE_PACKAGE "luci-app-dae" "kenzok8/small-package" "main" "pkg"
-UPDATE_PACKAGE "luci-app-haproxy-tcp" "kenzok8/small-package" "main" "pkg"
+#UPDATE_PACKAGE "luci-app-rclone" "kenzok8/small-package" "main" "pkg"
+#UPDATE_PACKAGE "luci-app-daed" "kenzok8/small-package" "main" "pkg"
+#UPDATE_PACKAGE "luci-app-dae" "kenzok8/small-package" "main" "pkg"
+#UPDATE_PACKAGE "luci-app-haproxy-tcp" "kenzok8/small-package" "main" "pkg"
 
 
 #speedtest
