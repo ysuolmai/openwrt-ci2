@@ -201,6 +201,7 @@ fi
     "CONFIG_PACKAGE_kmod-nf-nat6=y"
     "CONFIG_PACKAGE_kmod-dummy=y"
     "CONFIG_PACKAGE_kmod-veth=y"
+    "CONFIG_PACKAGE_automount=y"
 )
 
 # Append configuration lines to .config
