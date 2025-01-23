@@ -73,7 +73,8 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 
 #lucky
 #git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
-
+#luci
+UPDATE_PACKAGE "luci" "https://github.com/coolsnowwolf/luci.git" "openwrt-23.05"
 #alist
 UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
 
@@ -96,6 +97,7 @@ UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adgu
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
     "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB" "mihomo"
+    "argon"
 )
 
 
@@ -126,7 +128,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-ddns-go=y"
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
-    "CONFIG_PACKAGE_luci-app-argon-config=y"
+    #"CONFIG_PACKAGE_luci-app-argon-config=y"
     "CONFIG_PACKAGE_nano=y"
     "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
     "CONFIG_PACKAGE_luci-app-netspeedtest=y"
@@ -134,6 +136,7 @@ provided_config_lines=(
     "CONFIG_COREMARK_OPTIMIZE_O3=y"
     "CONFIG_COREMARK_ENABLE_MULTITHREADING=y"
     "CONFIG_COREMARK_NUMBER_OF_THREADS=6"
+    "CONFIG_PACKAGE_luci-theme-design=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
