@@ -144,6 +144,7 @@ provided_config_lines=(
     "CONFIG_COREMARK_ENABLE_MULTITHREADING=y"
     "CONFIG_COREMARK_NUMBER_OF_THREADS=6"
     "CONFIG_PACKAGE_luci-theme-design=y"
+    "CONFIG_PACKAGE_luci-app-filetransfer=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
