@@ -189,7 +189,6 @@ fi
     "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=n"
     "CONFIG_PACKAGE_htop=y"
     "CONFIG_PACKAGE_fuse-utils=y"
-    "CONFIG_PACKAGE_openssh-sftp-server=y"
     "CONFIG_PACKAGE_tcpdump=y"
     "CONFIG_PACKAGE_sgdisk=y"
     "CONFIG_PACKAGE_openssl-util=y"
