@@ -145,6 +145,7 @@ provided_config_lines=(
     "CONFIG_COREMARK_NUMBER_OF_THREADS=6"
     "CONFIG_PACKAGE_luci-theme-design=y"
     "CONFIG_PACKAGE_luci-app-filetransfer=y"
+    "CONFIG_PACKAGE_openssh-sftp-server=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
