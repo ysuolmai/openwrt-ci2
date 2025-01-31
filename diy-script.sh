@@ -146,6 +146,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-theme-design=y"
     "CONFIG_PACKAGE_luci-app-filetransfer=y"
     "CONFIG_PACKAGE_openssh-sftp-server=y"
+    "CONFIG_PACKAGE_luci-app-frpc=y"    
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
@@ -213,6 +214,8 @@ fi
     "CONFIG_PACKAGE_kmod-dummy=y"
     "CONFIG_PACKAGE_kmod-veth=y"
     "CONFIG_PACKAGE_automount=y"
+    "CONFIG_PACKAGE_luci-app-frps=y"    
+
 )
 
 # Append configuration lines to .config
