@@ -140,10 +140,10 @@ provided_config_lines=(
     "CONFIG_COREMARK_OPTIMIZE_O3=y"
     "CONFIG_COREMARK_ENABLE_MULTITHREADING=y"
     "CONFIG_COREMARK_NUMBER_OF_THREADS=6"
-    "CONFIG_PACKAGE_luci-theme-design=y"
+    #"CONFIG_PACKAGE_luci-theme-design=y"
     "CONFIG_PACKAGE_luci-app-filetransfer=y"
     "CONFIG_PACKAGE_openssh-sftp-server=y"
-    "CONFIG_PACKAGE_luci-app-frpc=y"    
+    "CONFIG_PACKAGE_luci-app-frpc=m"    
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
