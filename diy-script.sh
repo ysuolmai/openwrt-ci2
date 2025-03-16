@@ -245,6 +245,10 @@ cat ${DTS_PATH}ipq6018-256m.dtsi
     "CONFIG_PACKAGE_luci-app-frps=y"    
 )
 
+if [[ $FIRMWARE_TAG == *"IPQ"* ]]; then
+    "CONFIG_PACKAGE_sqm-scripts-nss=y"  
+fi
+
 # Append configuration lines to .config
 for line in "${provided_config_lines[@]}"; do
     echo "$line" >> .config
