@@ -67,7 +67,7 @@ git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-ap
 #git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
 
 #gecoosac
-#git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
+git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
 
 #lucky
 #git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
@@ -152,9 +152,10 @@ provided_config_lines=(
     "CONFIG_OPKG_USE_CURL=y"
     "CONFIG_PACKAGE_opkg=y"   
     "CONFIG_USE_APK=n"
-    "CONFIG_PACKAGE_luci-app-tailscale=y"
+    #"CONFIG_PACKAGE_luci-app-tailscale=y"
     #"CONFIG_PACKAGE_luci-app-msd_lite=y"
     #"CONFIG_PACKAGE_luci-app-lucky=y"
+    "CONFIG_PACKAGE_luci-app-gecoosac=y"
 )
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
