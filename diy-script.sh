@@ -254,6 +254,10 @@ for line in "${provided_config_lines[@]}"; do
     echo "$line" >> .config
 done
 
+#切换nss到11.4,解决wifi中继问题
+sed -i 's/CONFIG_NSS_FIRMWARE_VERSION_12_2=y/CONFIG_NSS_FIRMWARE_VERSION_11_4=y/' .config
+
+
 #./scripts/feeds update -a
 #./scripts/feeds install -a
 
@@ -288,3 +292,6 @@ if [[ -d ./feeds/packages/lang/golang ]]; then
 	\rm -rf ./feeds/packages/lang/golang
 	git clone $GOLANG_REPO -b $GOLANG_BRANCH ./feeds/packages/lang/golang
 fi
+
+
+
