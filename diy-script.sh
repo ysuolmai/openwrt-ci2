@@ -186,6 +186,9 @@ else
 	"CONFIG_PACKAGE_kmod-usb-storage=y"
 	"CONFIG_PACKAGE_kmod-usb2=y"
     )
+
+    #解决wifi中继问题
+    sed -i 's/CONFIG_NSS_FIRMWARE_VERSION_12_2=y/CONFIG_NSS_FIRMWARE_VERSION_11_4=y/' .config
 fi
 
 cat ${DTS_PATH}ipq6018-256m.dtsi
