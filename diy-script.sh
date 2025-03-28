@@ -258,7 +258,7 @@ for line in "${provided_config_lines[@]}"; do
 done
 
 
-
+rm ./target/linux/qualcommax/patches-6.12/0083-v6.11-arm64-dts-qcom-ipq6018-add-sdhci-node.patch
 
 #./scripts/feeds update -a
 #./scripts/feeds install -a
