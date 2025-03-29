@@ -93,16 +93,6 @@ UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adgu
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 
 
-
-#rm -rf tmp_repo
-#git clone --depth=1 --filter=blob:none --sparse https://github.com/VIKINGYFY/immortalwrt.git tmp_repo
-#cd tmp_repo
-#git sparse-checkout set target/linux/qualcommax/files/arch/arm64/boot/dts/qcom
-#cd ..
-#cp -rf tmp_repo/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/* $DTS_PATH
-#rm -rf tmp_repo
-
-
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
     "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB" "mihomo"
