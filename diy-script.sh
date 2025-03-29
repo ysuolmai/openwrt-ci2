@@ -164,9 +164,11 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
         "CONFIG_PACKAGE_wpad-openssl=n"
     )
     #find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\)\.dtsi/ipq\1-nowifi.dtsi/
-    find "$DTS_PATH" -type f \( -name "ipq6018-256m.dtsi" -o -name "ipq8074-512m.dtsi" \) -exec sed -i \
-        -e 's/reg = <0x0 0x4ab00000 0x0 0x02800000>;/reg = <0x0 0x4ab00000 0x0 0x1000000>;/' \
-        -e 's/reg = <0x0 0x4b000000 0x0 0x3700000>;/reg = <0x0 0x4b000000 0x0 0x1000000>;/' {} +
+    #find "$DTS_PATH" -type f \( -name "ipq6018-256m.dtsi" -o -name "ipq8074-512m.dtsi" \) -exec sed -i \
+    #    -e 's/reg = <0x0 0x4ab00000 0x0 0x02800000>;/reg = <0x0 0x4ab00000 0x0 0x1000000>;/' \
+    #    -e 's/reg = <0x0 0x4b000000 0x0 0x3700000>;/reg = <0x0 0x4b000000 0x0 0x1000000>;/' {} +
+    find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\).dtsi/ipq\1-nowifi.dtsi/g' {} +
+    echo "qualcommax set up nowifi successfully!"
 
 else
     provided_config_lines+=(
