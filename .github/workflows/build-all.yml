@@ -1,4 +1,4 @@
-name: Build All
+name: Build all
 
 on:
   workflow_dispatch:
@@ -17,45 +17,47 @@ jobs:
   trigger-actions:
     runs-on: ubuntu-latest
     steps:
-      - name: Get workflow list
-        id: get-workflows
+      - name: Get and filter workflows
+        id: filter-workflows
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # 获取所有workflows
           response=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows")
-          echo "response=$response" >> $GITHUB_OUTPUT
-
-      - name: Filter workflows
-        id: filter-workflows
-        run: |
-          build_type="${{ github.event.inputs.build_type }}"
-          workflows="${{ steps.get-workflows.outputs.response }}"
           
-          case $build_type in
+          # 根据输入参数设置过滤条件
+          case "${{ github.event.inputs.build_type }}" in
             "all")
               filter='.workflows[] | select(.name | startswith("IPQ")) | .id'
               ;;
             "nowifi only")
-              filter='.workflows[] | select(.name | startswith("IPQ") and contains("NOWIFI")) | .id'
+              filter='.workflows[] | select(.name | startswith("IPQ") and (.name | contains("NOWIFI"))) | .id'
               ;;
             "wifi only")
-              filter='.workflows[] | select(.name | startswith("IPQ") and (contains("NOWIFI") | not)) | .id'
+              filter='.workflows[] | select(.name | startswith("IPQ") and (.name | contains("NOWIFI") | not)) | .id'
               ;;
           esac
 
-          filtered=$(echo "$workflows" | jq -r "$filter | @sh")
-          echo "filtered=$filtered" >> $GITHUB_OUTPUT
+          # 处理JSON并输出结果
+          filtered_ids=$(echo "$response" | jq -r "$filter | join(\" \")")
+          echo "ids=${filtered_ids}" >> $GITHUB_OUTPUT
 
       - name: Trigger workflows
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for workflow_id in ${{ steps.filter-workflows.outputs.filtered }}; do
+          if [ -z "${{ steps.filter-workflows.outputs.ids }}" ]; then
+            echo "没有找到匹配的workflow"
+            exit 0
+          fi
+
+          for workflow_id in ${{ steps.filter-workflows.outputs.ids }}; do
+            echo "正在触发 workflow ID: $workflow_id"
             curl -s -X POST \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$workflow_id/dispatches" \
               -d '{"ref":"${{ github.ref }}"}'
-            echo "Triggered workflow $workflow_id"
+            sleep 1
           done
