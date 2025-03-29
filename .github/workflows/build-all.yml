@@ -1,0 +1,61 @@
+name: Build All
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "选择编译类型"
+        required: true
+        type: choice
+        default: "all"
+        options:
+          - "all"
+          - "nowifi only"
+          - "wifi only"
+
+jobs:
+  trigger-actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get workflow list
+        id: get-workflows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          response=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows")
+          echo "response=$response" >> $GITHUB_OUTPUT
+
+      - name: Filter workflows
+        id: filter-workflows
+        run: |
+          build_type="${{ github.event.inputs.build_type }}"
+          workflows="${{ steps.get-workflows.outputs.response }}"
+          
+          case $build_type in
+            "all")
+              filter='.workflows[] | select(.name | startswith("IPQ")) | .id'
+              ;;
+            "nowifi only")
+              filter='.workflows[] | select(.name | startswith("IPQ") and contains("NOWIFI")) | .id'
+              ;;
+            "wifi only")
+              filter='.workflows[] | select(.name | startswith("IPQ") and (contains("NOWIFI") | not)) | .id'
+              ;;
+          esac
+
+          filtered=$(echo "$workflows" | jq -r "$filter | @sh")
+          echo "filtered=$filtered" >> $GITHUB_OUTPUT
+
+      - name: Trigger workflows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for workflow_id in ${{ steps.filter-workflows.outputs.filtered }}; do
+            curl -s -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$workflow_id/dispatches" \
+              -d '{"ref":"${{ github.ref }}"}'
+            echo "Triggered workflow $workflow_id"
+          done
