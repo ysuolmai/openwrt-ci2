@@ -92,8 +92,8 @@ UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main
 UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 
-DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
-#更新dts
+
+
 #rm -rf tmp_repo
 #git clone --depth=1 --filter=blob:none --sparse https://github.com/VIKINGYFY/immortalwrt.git tmp_repo
 #cd tmp_repo
@@ -158,6 +158,8 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-gecoosac=y"
 )
 
+DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
+
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     provided_config_lines+=(
         "CONFIG_PACKAGE_hostapd-common=n"
@@ -188,12 +190,9 @@ else
 	"CONFIG_PACKAGE_kmod-usb-storage=y"
 	"CONFIG_PACKAGE_kmod-usb2=y"
     )
-
-    #解决wifi中继问题,不可用
-    #sed -i 's/CONFIG_NSS_FIRMWARE_VERSION_12_2=y/CONFIG_NSS_FIRMWARE_VERSION_11_4=y/' .config
 fi
 
-cat ${DTS_PATH}ipq6018-256m.dtsi
+
 
 
 
