@@ -162,8 +162,8 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     #    -e 's/reg = <0x0 0x4b000000 0x0 0x3700000>;/reg = <0x0 0x4b000000 0x0 0x1000000>;/' {} +
     #find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\).dtsi/ipq\1-nowifi.dtsi/g' {} +
     find "$DTS_PATH" -type f ! -iname '*nowifi*' -exec sed -i \
-      -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' \
-      -e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
+      -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' {} +
+      #-e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
     echo "qualcommax set up nowifi successfully!"
 
 else
