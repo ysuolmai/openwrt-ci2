@@ -1,0 +1,74 @@
+name: Build Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "选择编译类型"
+        required: true
+        type: choice
+        default: "all"
+        options:
+          - "all"
+          - "nowifi only"
+          - "wifi only"
+
+jobs:
+  trigger-actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get and filter workflows
+        id: filter-workflows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 获取API响应并分离状态码
+          response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows")
+          
+          http_code=${response: -3}
+          body=${response%???}
+          
+          # 检查API响应状态
+          if [ "$http_code" -ne 200 ]; then
+            echo "::error::API请求失败 (HTTP $http_code)"
+            jq -r . <<< "$body"  # 输出原始错误信息
+            exit 1
+          fi
+
+          # 设置过滤条件模板
+          case "${{ github.event.inputs.build_type }}" in
+            "all")
+              filter='.workflows[] | select(.name | test("^IPQ")) | .id'
+              ;;
+            "nowifi only")
+              filter='.workflows[] | select(.name | test("^IPQ.*NOWIFI")) | .id'
+              ;;
+            "wifi only")
+              filter='.workflows[] | select(.name | test("^IPQ(?:(?!NOWIFI).)*$")) | .id'
+              ;;
+          esac
+
+          # 使用jq处理并验证结果
+          filtered_ids=$(jq -r "$filter // empty" <<< "$body" | tr '\n' ' ')
+          
+          if [ -z "$filtered_ids" ]; then
+            echo "::warning::未找到匹配的workflow"
+          fi
+          
+          echo "ids=${filtered_ids%% }" >> $GITHUB_OUTPUT
+
+      - name: Trigger workflows
+        if: ${{ steps.filter-workflows.outputs.ids != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for workflow_id in ${{ steps.filter-workflows.outputs.ids }}; do
+            echo "Triggering workflow $workflow_id"
+            curl -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$workflow_id/dispatches" \
+              -d '{"ref":"${{ github.ref }}"}'
+            sleep 1
+          done

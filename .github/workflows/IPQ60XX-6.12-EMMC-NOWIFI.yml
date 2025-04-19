@@ -1,4 +1,4 @@
-name: IPQ60XX-6.12-NOWIFI
+name: IPQ60XX-6.12-EMMC-NOWIFI
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ env:
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: IPQ60XX-6.12-NOWIFI
+  FIRMWARE_TAG: IPQ60XX-6.12-EMMC-NOWIFI
   TZ: Asia/Shanghai
 
 jobs:
@@ -91,7 +91,7 @@ jobs:
         mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
         prefix: ${{ env.OPENWRT_PATH }}
         skip_saving: false
-        
+    
     - name: Install Feeds(安装feeds)
       run: |
         cd $OPENWRT_PATH
