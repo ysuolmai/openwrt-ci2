@@ -145,15 +145,14 @@ provided_config_lines=(
     #"CONFIG_PACKAGE_luci-theme-design=y"
     "CONFIG_PACKAGE_luci-app-filetransfer=y"
     "CONFIG_PACKAGE_openssh-sftp-server=y"
-    "CONFIG_PACKAGE_luci-app-frpc=m" 
+    "CONFIG_PACKAGE_luci-app-frpc=y" 
     "CONFIG_OPKG_USE_CURL=y"
     "CONFIG_PACKAGE_opkg=y"   
     "CONFIG_USE_APK=n"
     #"CONFIG_PACKAGE_luci-app-tailscale=y"
     #"CONFIG_PACKAGE_luci-app-msd_lite=y"
     #"CONFIG_PACKAGE_luci-app-lucky=y"
-    #"CONFIG_PACKAGE_luci-app-gecoosac=y"
-    "CONFIG_PACKAGE_luci-app-openvpn-client=y"
+    #"CONFIG_PACKAGE_luci-app-openvpn-client=y"
 )
 
 DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
@@ -261,6 +260,8 @@ rm package/kernel/mac80211/patches/nss/subsys/{999-775-wifi-mac80211-Changes-for
     "CONFIG_PACKAGE_luci-app-ssr-plus=y"
     "CONFIG_PACKAGE_luci-app-passwall2=y"
     "CONFIG_PACKAGE_luci-app-samba4=y"
+    "CONFIG_PACKAGE_luci-app-gecoosac=y"
+    "CONFIG_PACKAGE_luci-app-tailscale=y"
 )
 
 [[ $FIRMWARE_TAG == "IPQ"* ]] && provided_config_lines+=("CONFIG_PACKAGE_sqm-scripts-nss=y")
