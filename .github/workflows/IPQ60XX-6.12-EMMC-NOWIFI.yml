@@ -140,7 +140,9 @@ jobs:
         cd $OPENWRT_PATH/bin/targets/*/*
         cat sha256sums
         cp $OPENWRT_PATH/.config build.config
-        mv -f $OPENWRT_PATH/bin/packages/*/*/*.ipk packages
+        #mv -f $OPENWRT_PATH/bin/packages/*/*/*.ipk packages
+        mkdir -p packages
+        find "$OPENWRT_PATH/bin/packages/" -type f \( -name "*.ipk" -o -name "*.apk" \) -exec mv -f {} packages/ \; 2>/dev/null
         tar -zcf Packages.tar.gz packages
         rm -rf packages feeds.buildinfo version.buildinfo
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
