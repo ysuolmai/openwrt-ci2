@@ -49,7 +49,6 @@ UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 UPDATE_PACKAGE "openwrt-gecoosac" "lwb1978/openwrt-gecoosac" "main"
 #UPDATE_PACKAGE "luci-app-homeproxy" "immortalwrt/homeproxy" "master"
 UPDATE_PACKAGE "luci-app-ddns-go" "sirpdboy/luci-app-ddns-go" "main"
-#UPDATE_PACKAGE "luci-app-alist" "sbwml/luci-app-alist" "main"
 UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
 
 #small-package
