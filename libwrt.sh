@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # 修改默认IP
@@ -44,36 +45,12 @@ UPDATE_PACKAGE() {
 }
 
 
-# 添加额外插件
-git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
-
-# 科学上网插件
-#UPDATE_PACKAGE "homeproxy" "https://github.com/VIKINGYFY/homeproxy.git" "main"
-#UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
-# Themes
-#UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "openwrt-24.10"
-
-
-
-#DDNS-go
-git clone https://github.com/sirpdboy/luci-app-ddns-go.git package/ddns-go
-
-#luci-app-zerotier
-git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-app-zerotier
-
-
-#tailscale
-#sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
-#git clone https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
-
-#gecoosac
-git clone https://github.com/lwb1978/openwrt-gecoosac package/openwrt-gecoosac
-
-#lucky
-#git clone  https://github.com/gdy666/luci-app-lucky.git package/lucky
-
-#alist
-UPDATE_PACKAGE "alist" "https://github.com/sbwml/luci-app-alist.git" "main"
+UPDATE_PACKAGE "luci-app-poweroff" "esirplayground/luci-app-poweroff" "master"
+UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
+UPDATE_PACKAGE "openwrt-gecoosac" "lwb1978/openwrt-gecoosac" "main"
+#UPDATE_PACKAGE "luci-app-homeproxy" "immortalwrt/homeproxy" "master"
+UPDATE_PACKAGE "luci-app-ddns-go" "sirpdboy/luci-app-ddns-go" "main"
+UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
 
 #small-package
 UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
@@ -83,7 +60,7 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         taskd luci-lib-xterm luci-lib-taskd luci-app-ssr-plus luci-app-passwall2 \
         luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
         luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
-        luci-app-nikki luci-app-openvpn-client" "kenzok8/small-package" "main" "pkg"
+        luci-app-nikki luci-app-vlmcsd vlmcsd" "kenzok8/small-package" "main" "pkg"
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
@@ -92,13 +69,20 @@ UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main
 UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 
+UPDATE_PACKAGE "openwrt-podman" "https://github.com/breeze303/openwrt-podman" "main"
+UPDATE_PACKAGE "luci-app-quickfile" "https://github.com/sbwml/luci-app-quickfile" "main"
+sed -i 's|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-$(ARCH_PACKAGES) $(1)/usr/bin/quickfile|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-aarch64_generic $(1)/usr/bin/quickfile|' package/luci-app-quickfile/quickfile/Makefile
+
 rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname luci-app-diskman -prune)
 rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname parted -prune)
-mkdir -p luci-app-diskman && \
-wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/applications/luci-app-diskman/Makefile -O luci-app-diskman/Makefile
-mkdir -p parted && \
-wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -O parted/Makefile
+mkdir -p package/luci-app-diskman && \
+wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/applications/luci-app-diskman/Makefile -O package/luci-app-diskman/Makefile
+sed -i 's/fs-ntfs /fs-ntfs3 /g' package/luci-app-diskman/Makefile
+sed -i '/ntfs-3g-utils /d' package/luci-app-diskman/Makefile
+mkdir -p package/parted && \
+wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -O package/parted/Makefile
 
+UPDATE_PACKAGE "frp" "https://github.com/ysuolmai/openwrt-frp.git" "main"
 
 keywords_to_delete=(
     "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
@@ -149,9 +133,10 @@ provided_config_lines=(
     "CONFIG_OPKG_USE_CURL=y"
     "CONFIG_PACKAGE_opkg=y"   
     "CONFIG_USE_APK=n"
-    #"CONFIG_PACKAGE_luci-app-tailscale=y"
+    "CONFIG_PACKAGE_luci-app-tailscale=y"
     #"CONFIG_PACKAGE_luci-app-msd_lite=y"
     #"CONFIG_PACKAGE_luci-app-lucky=y"
+    "CONFIG_PACKAGE_luci-app-gecoosac=y"
     #"CONFIG_PACKAGE_luci-app-openvpn-client=y"
 )
 
@@ -168,10 +153,10 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     #    -e 's/reg = <0x0 0x4ab00000 0x0 0x02800000>;/reg = <0x0 0x4ab00000 0x0 0x1000000>;/' \
     #    -e 's/reg = <0x0 0x4b000000 0x0 0x3700000>;/reg = <0x0 0x4b000000 0x0 0x1000000>;/' {} +
     #find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\).dtsi/ipq\1-nowifi.dtsi/g' {} +
-    #find "$DTS_PATH" -type f ! -iname '*nowifi*' -exec sed -i \
-    #  -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' \
-    #  -e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
-    #echo "qualcommax set up nowifi successfully!"
+    find "$DTS_PATH" -type f ! -iname '*nowifi*' -exec sed -i \
+      -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' \
+      -e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
+    echo "qualcommax set up nowifi successfully!"
 
 else
     provided_config_lines+=(
@@ -206,16 +191,18 @@ rm package/kernel/mac80211/patches/nss/ath11k/999-902-ath11k-fix-WDS-by-disablin
 rm package/kernel/mac80211/patches/nss/subsys/{999-775-wifi-mac80211-Changes-for-WDS-MLD.patch,999-922-mac80211-fix-null-chanctx-warning-for-NSS-dynamic-VLAN.patch}
 
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
-    "CONFIG_PACKAGE_luci-app-diskman=y"
-    "CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
-    "CONFIG_PACKAGE_luci-app-docker=m"
-    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=m"
-    "CONFIG_PACKAGE_luci-app-dockerman=m"
-    "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=m"
-    "CONFIG_PACKAGE_luci-app-alist=y"
-    "CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y"
-    "CONFIG_PACKAGE_fdisk=y"
-    "CONFIG_PACKAGE_parted=y"
+    #"CONFIG_PACKAGE_luci-app-diskman=y"
+    #"CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
+    #"CONFIG_PACKAGE_luci-app-docker=m"
+    #"CONFIG_PACKAGE_luci-i18n-docker-zh-cn=m"
+    #"CONFIG_PACKAGE_luci-app-dockerman=m"
+    #"CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=m"
+    "CONFIG_PACKAGE_luci-app-podman=y"
+    "CONFIG_PACKAGE_podman=y"
+    "CONFIG_PACKAGE_luci-app-openlist2=y"
+    "CONFIG_PACKAGE_luci-i18n-openlist2-zh-cn=y"
+    #"CONFIG_PACKAGE_fdisk=y"
+    #"CONFIG_PACKAGE_parted=y"
     "CONFIG_PACKAGE_iptables-mod-extra=y"
     "CONFIG_PACKAGE_ip6tables-nft=y"
     "CONFIG_PACKAGE_ip6tables-mod-fullconenat=y"
@@ -232,11 +219,11 @@ rm package/kernel/mac80211/patches/nss/subsys/{999-775-wifi-mac80211-Changes-for
     "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan_Plus=n"
     "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=n"
     "CONFIG_PACKAGE_htop=y"
-    "CONFIG_PACKAGE_fuse-utils=y"
+    #"CONFIG_PACKAGE_fuse-utils=y"
     "CONFIG_PACKAGE_tcpdump=y"
-    "CONFIG_PACKAGE_sgdisk=y"
+    #"CONFIG_PACKAGE_sgdisk=y"
     "CONFIG_PACKAGE_openssl-util=y"
-    "CONFIG_PACKAGE_resize2fs=y"
+    #"CONFIG_PACKAGE_resize2fs=y"
     "CONFIG_PACKAGE_qrencode=y"
     "CONFIG_PACKAGE_smartmontools-drivedb=y"
     "CONFIG_PACKAGE_usbutils=y"
@@ -255,13 +242,14 @@ rm package/kernel/mac80211/patches/nss/subsys/{999-775-wifi-mac80211-Changes-for
     "CONFIG_PACKAGE_kmod-nf-nat6=y"
     "CONFIG_PACKAGE_kmod-dummy=y"
     "CONFIG_PACKAGE_kmod-veth=y"
-    "CONFIG_PACKAGE_automount=y"
+    #"CONFIG_PACKAGE_automount=y"
     "CONFIG_PACKAGE_luci-app-frps=y"
-    "CONFIG_PACKAGE_luci-app-ssr-plus=y"
-    "CONFIG_PACKAGE_luci-app-passwall2=y"
+    #"CONFIG_PACKAGE_luci-app-ssr-plus=y"
+    #"CONFIG_PACKAGE_luci-app-passwall2=y"
     "CONFIG_PACKAGE_luci-app-samba4=y"
-    "CONFIG_PACKAGE_luci-app-gecoosac=y"
-    "CONFIG_PACKAGE_luci-app-tailscale=y"
+    "CONFIG_PACKAGE_luci-app-openclash=y"
+    "CONFIG_PACKAGE_luci-app-quickfile=y"
+    #"CONFIG_PACKAGE_quickfile=y"
 )
 
 [[ $FIRMWARE_TAG == "IPQ"* ]] && provided_config_lines+=("CONFIG_PACKAGE_sqm-scripts-nss=y")
@@ -301,6 +289,13 @@ sed -i "/exit 0/i\\
 [ -f \'/etc/99-distfeeds.conf\' ] && mv \'/etc/99-distfeeds.conf\' \'/etc/opkg/distfeeds.conf\'\n\
 sed -ri \'/check_signature/s@^[^#]@#&@\' /etc/opkg.conf\n" "package/emortal/default-settings/files/99-default-settings"
 
+#解决 dropbear 配置的 bug
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_dropbear_setup.sh" "package/base-files/files/etc/uci-defaults/99_dropbear_setup"
+
+if [[ $FIRMWARE_TAG == *"EMMC"* ]]; then
+    #解决 nginx 的问题
+    install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_nginx_setup.sh" "package/base-files/files/etc/uci-defaults/99_nginx_setup"
+fi
 
 #update golang
 GOLANG_REPO="https://github.com/sbwml/packages_lang_golang"
@@ -309,6 +304,3 @@ if [[ -d ./feeds/packages/lang/golang ]]; then
 	\rm -rf ./feeds/packages/lang/golang
 	git clone $GOLANG_REPO -b $GOLANG_BRANCH ./feeds/packages/lang/golang
 fi
-
-
-
