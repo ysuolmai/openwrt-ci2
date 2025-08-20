@@ -297,10 +297,20 @@ if [[ $FIRMWARE_TAG == *"EMMC"* ]]; then
     install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_nginx_setup.sh" "package/base-files/files/etc/uci-defaults/99_nginx_setup"
 fi
 
-#update golang
-GOLANG_REPO="https://github.com/sbwml/packages_lang_golang"
-GOLANG_BRANCH="24.x"
-if [[ -d ./feeds/packages/lang/golang ]]; then
-	\rm -rf ./feeds/packages/lang/golang
-	git clone $GOLANG_REPO -b $GOLANG_BRANCH ./feeds/packages/lang/golang
+
+# 修复 gpgme 构建失败（变参函数和 fortify 宏问题）
+GPGME_PATCH_DIR="package/feeds/packages/gpgme"
+GPGME_TOOL_C="${GPGME_PATCH_DIR}/src/gpgme-tool.c"
+GPGME_MK="${GPGME_PATCH_DIR}/Makefile.in"
+
+# 1. 处理 fortify 宏冲突：添加 -U_FORTIFY_SOURCE
+if ! grep -q "U_FORTIFY_SOURCE" "$GPGME_MK"; then
+    sed -i '/^AM_CFLAGS/s/$/ -U_FORTIFY_SOURCE/' "$GPGME_MK"
+fi
+
+# 2. 修正变参函数类型
+if [ -f "$GPGME_TOOL_C" ]; then
+    sed -i 's/int ap;/va_list ap;/g' "$GPGME_TOOL_C"
+    sed -i 's/int \*ap;/va_list ap;/g' "$GPGME_TOOL_C"
+    sed -i '/#include <stdio.h>/a #include <stdarg.h>' "$GPGME_TOOL_C"
 fi
