@@ -72,8 +72,8 @@ UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main
 UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "master"
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 
-UPDATE_PACKAGE "openwrt-podman" "https://github.com/breeze303/openwrt-podman" "main"
-#UPDATE_PACKAGE "luci-app-quickfile" "https://github.com/sbwml/luci-app-quickfile" "main"
+#UPDATE_PACKAGE "openwrt-podman" "https://github.com/breeze303/openwrt-podman" "main"
+UPDATE_PACKAGE "luci-app-quickfile" "https://github.com/sbwml/luci-app-quickfile" "main"
 #sed -i 's|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-$(ARCH_PACKAGES) $(1)/usr/bin/quickfile|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-aarch64_generic $(1)/usr/bin/quickfile|' package/luci-app-quickfile/quickfile/Makefile
 
 rm -rf $(find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname luci-app-diskman -prune)
@@ -196,12 +196,12 @@ rm package/kernel/mac80211/patches/nss/subsys/{999-775-wifi-mac80211-Changes-for
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
     #"CONFIG_PACKAGE_luci-app-diskman=y"
     #"CONFIG_PACKAGE_luci-i18n-diskman-zh-cn=y"
-    #"CONFIG_PACKAGE_luci-app-docker=m"
-    #"CONFIG_PACKAGE_luci-i18n-docker-zh-cn=m"
-    #"CONFIG_PACKAGE_luci-app-dockerman=m"
-    #"CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=m"
-    "CONFIG_PACKAGE_luci-app-podman=y"
-    "CONFIG_PACKAGE_podman=y"
+    "CONFIG_PACKAGE_luci-app-docker=m"
+    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=m"
+    "CONFIG_PACKAGE_luci-app-dockerman=m"
+    "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=m"
+    #"CONFIG_PACKAGE_luci-app-podman=y"
+    #"CONFIG_PACKAGE_podman=y"
     "CONFIG_PACKAGE_luci-app-openlist2=y"
     "CONFIG_PACKAGE_luci-i18n-openlist2-zh-cn=y"
     #"CONFIG_PACKAGE_fdisk=y"
@@ -247,8 +247,8 @@ rm package/kernel/mac80211/patches/nss/subsys/{999-775-wifi-mac80211-Changes-for
     "CONFIG_PACKAGE_kmod-veth=y"
     #"CONFIG_PACKAGE_automount=y"
     "CONFIG_PACKAGE_luci-app-frps=y"
-    #"CONFIG_PACKAGE_luci-app-ssr-plus=y"
-    #"CONFIG_PACKAGE_luci-app-passwall2=y"
+    "CONFIG_PACKAGE_luci-app-ssr-plus=y"
+    "CONFIG_PACKAGE_luci-app-passwall2=y"
     "CONFIG_PACKAGE_luci-app-samba4=y"
     "CONFIG_PACKAGE_luci-app-openclash=y"
     #"CONFIG_PACKAGE_luci-app-quickfile=y"
