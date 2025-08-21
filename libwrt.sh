@@ -4,6 +4,9 @@
 # 修改默认IP
 # sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
 
+#补足依赖
+sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+
 #安装和更新软件包
 UPDATE_PACKAGE() {
 	local PKG_NAME=$1
