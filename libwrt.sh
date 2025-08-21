@@ -302,18 +302,43 @@ install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_dropbear_setup.sh" "package/base-
 
 
 # 修复 gpgme 构建失败（变参函数和 fortify 宏问题）
-GPGME_PATCH_DIR="package/feeds/packages/gpgme"
-GPGME_TOOL_C="${GPGME_PATCH_DIR}/src/gpgme-tool.c"
-GPGME_MK="${GPGME_PATCH_DIR}/Makefile.in"
+# Set STAGING_DIR for the toolchain
+export STAGING_DIR=$PWD/staging_dir/toolchain-aarch64_cortex-a53_gcc-14.3.0_musl
+export PATH=$STAGING_DIR/bin:$PATH
+export CFLAGS="-I$STAGING_DIR/include -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0"
+export CXXFLAGS="$CFLAGS"
+export LDFLAGS="-L$STAGING_DIR/lib -L$STAGING_DIR/usr/lib"
 
-# 1. 处理 fortify 宏冲突：添加 -U_FORTIFY_SOURCE
-if ! grep -q "U_FORTIFY_SOURCE" "$GPGME_MK"; then
-    sed -i '/^AM_CFLAGS/s/$/ -U_FORTIFY_SOURCE/' "$GPGME_MK"
-fi
+# Create patches directory for gpgme
+mkdir -p package/libs/gpgme/patches
 
-# 2. 修正变参函数类型
-if [ -f "$GPGME_TOOL_C" ]; then
-    sed -i 's/int ap;/va_list ap;/g' "$GPGME_TOOL_C"
-    sed -i 's/int \*ap;/va_list ap;/g' "$GPGME_TOOL_C"
-    sed -i '/#include <stdio.h>/a #include <stdarg.h>' "$GPGME_TOOL_C"
-fi
+# Create patch file for gpgme
+cat << 'EOF' > package/libs/gpgme/patches/0001-fix-gpgme-toolchain-headers.patch
+diff --git a/package/libs/gpgme/src/gpgme-tool.c b/package/libs/gpgme/src/gpgme-tool.c
+index 1234567..89abcde 100644
+--- a/package/libs/gpgme/src/gpgme-tool.c
++++ b/package/libs/gpgme/src/gpgme-tool.c
+@@ -23,7 +23,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+-#include <stdio.h>
++#include "STAGING_DIR/include/stdio.h"
+ 
+ #include <gpgme.h>
+ 
+diff --git a/package/libs/gpgme/Makefile b/package/libs/gpgme/Makefile
+index 2345678..9abcdef 100644
+--- a/package/libs/gpgme/Makefile
++++ b/package/libs/gpgme/Makefile
+@@ -50,6 +50,7 @@ define Build/Compile
+ 	$(MAKE) -C $(PKG_BUILD_DIR) \
+ 		$(TARGET_CONFIGURE_OPTS) \
+ 		CFLAGS="$(TARGET_CFLAGS) -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" \
++		STAGING_DIR="$(STAGING_DIR)" \
+ 		LDFLAGS="$(TARGET_LDFLAGS)"
+ endef
+EOF
+
+# Replace STAGING_DIR placeholder in the patch with the actual path
+sed -i "s|STAGING_DIR|$STAGING_DIR|g" package/libs/gpgme/patches/0001-fix-gpgme-toolchain-headers.patch
