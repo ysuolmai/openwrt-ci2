@@ -141,6 +141,9 @@ provided_config_lines=(
     #"CONFIG_PACKAGE_luci-app-lucky=y"
     "CONFIG_PACKAGE_luci-app-gecoosac=y"
     #"CONFIG_PACKAGE_luci-app-openvpn-client=y"
+	"CONFIG_PACKAGE_luci-app-wireguard=y"
+    "CONFIG_PACKAGE_wireguard-tools=y"
+	"CONFIG_PACKAGE_kmod-wireguard=y"
 )
 
 DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
