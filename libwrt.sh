@@ -302,4 +302,13 @@ install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_dropbear_setup.sh" "package/base-
 #    install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_nginx_setup.sh" "package/base-files/files/etc/uci-defaults/99_nginx_setup"
 #fi
 
-patch feeds/packages/lang/rust/Makefile ${GITHUB_WORKSPACE}/scripts/rust-makefile.patch
+#修复 rust 编译
+RUST_FILE=$(find ./feeds/packages/ -maxdepth 3 -type f -wholename "*/rust/Makefile")
+if [ -f "$RUST_FILE" ]; then
+	echo " "
+
+	sed -i 's/ci-llvm=true/ci-llvm=false/g' $RUST_FILE
+	patch $RUST_FILE ${GITHUB_WORKSPACE}/scripts/rust-makefile.patch
+
+	cd $PKG_PATH && echo "rust has been fixed!"
+fi
