@@ -313,4 +313,6 @@ if [ -f "$RUST_FILE" ]; then
 	cd $PKG_PATH && echo "rust has been fixed!"
 fi
 
-sed -i '/CMAKE_SHARED_LINKER_FLAGS/a CMAKE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5' include/cmake.mk
+if ! grep -q "CMAKE_POLICY_VERSION_MINIMUM" include/cmake.mk; then
+  echo 'CMAKE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5' >> include/cmake.mk
+fi
