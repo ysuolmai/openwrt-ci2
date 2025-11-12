@@ -87,17 +87,28 @@ wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Mak
 
 UPDATE_PACKAGE "frp" "https://github.com/ysuolmai/openwrt-frp.git" "master"
 
+# 只保留指定的 qualcommax_ipq60xx 设备
+if [[ $FIRMWARE_TAG == *"EMMC"* ]]; then
+    # 有 EMMC 时，只保留：redmi_ax5-jdcloud / jdcloud_re-ss-01 / jdcloud_re-cs-07
+    keep_pattern="\(redmi_ax5-jdcloud\|jdcloud_re-ss-01\|jdcloud_re-cs-07\)=y$"
+else
+    # 普通情况，只保留这几个
+    keep_pattern="\(redmi_ax5\|qihoo_360v6\|redmi_ax5-jdcloud\|zn_m2\|jdcloud_re-ss-01\|jdcloud_re-cs-07\)=y$"
+fi
+
+sed -i "/^CONFIG_TARGET_DEVICE_qualcommax_ipq60xx_DEVICE_/{
+    /$keep_pattern/!d
+}" ./.config
+
 keywords_to_delete=(
-    "xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600"
-    "mr7350" "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB" "mihomo"
+    #"xiaomi_ax3600" "xiaomi_ax9000" "xiaomi_ax1800" "glinet" "jdcloud_ax6600" "mr7350" 
+    "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB" "mihomo"
     "smartdns" "kucat" "bootstrap"
 )
 
 
 [[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
-#[[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "jdcloud_ax1800-pro" "redmi_ax5-jdcloud")
 [[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "disk")
-[[ $FIRMWARE_TAG == *"EMMC"* ]] && keywords_to_delete+=("cmiot_ax18" "qihoo_v6" "redmi_ax5=y" "zn_m2")
 
 for keyword in "${keywords_to_delete[@]}"; do
     sed -i "/$keyword/d" ./.config
