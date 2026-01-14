@@ -168,9 +168,9 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     echo "[NOWIFI] preparing nowifi dtsi files..."
 
     for dtsi in ipq6018-nowifi.dtsi ipq8074-nowifi.dtsi; do
-        if [[ -f "scripts/$dtsi" ]]; then
+        if [[ -f "${GITHUB_WORKSPACE}/scripts/$dtsi" ]]; then
             if [[ ! -f "$DTS_PATH/$dtsi" ]]; then
-                cp "scripts/$dtsi" "$DTS_PATH/"
+                cp "${GITHUB_WORKSPACE}/scripts/$dtsi" "$DTS_PATH/"
                 echo "[NOWIFI] copied $dtsi to $DTS_PATH"
             else
                 echo "[NOWIFI] $dtsi already exists in $DTS_PATH"
