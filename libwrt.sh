@@ -165,14 +165,26 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
         "CONFIG_PACKAGE_wpad-openssl=n"
     )
 
-    #find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\)\.dtsi/ipq\1-nowifi.dtsi/
-    #find "$DTS_PATH" -type f \( -name "ipq6018-256m.dtsi" -o -name "ipq8074-512m.dtsi" \) -exec sed -i \
-    #    -e 's/reg = <0x0 0x4ab00000 0x0 0x02800000>;/reg = <0x0 0x4ab00000 0x0 0x1000000>;/' \
-    #    -e 's/reg = <0x0 0x4b000000 0x0 0x3700000>;/reg = <0x0 0x4b000000 0x0 0x1000000>;/' {} +
-    #find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\).dtsi/ipq\1-nowifi.dtsi/g' {} +
+    echo "[NOWIFI] preparing nowifi dtsi files..."
+
+    for dtsi in ipq6018-nowifi.dtsi ipq8074-nowifi.dtsi; do
+        if [[ -f "scripts/$dtsi" ]]; then
+            if [[ ! -f "$DTS_PATH/$dtsi" ]]; then
+                cp "scripts/$dtsi" "$DTS_PATH/"
+                echo "[NOWIFI] copied $dtsi to $DTS_PATH"
+            else
+                echo "[NOWIFI] $dtsi already exists in $DTS_PATH"
+            fi
+        else
+            echo "[NOWIFI][ERROR] scripts/$dtsi not found!"
+            exit 1
+        fi
+    done
+
     find "$DTS_PATH" -type f ! -iname '*nowifi*' -exec sed -i \
       -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' \
       -e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
+
     echo "qualcommax set up nowifi successfully!"
 
 else
