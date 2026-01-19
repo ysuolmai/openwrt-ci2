@@ -342,71 +342,59 @@ if [ -f "$RUST_FILE" ]; then
 fi
 
 
-# 确保安装最新稳定版 Go（默认）
 ensure_go_latest() {
-    local LATEST_RAW CUR_VER REQ_VER OS ARCH TMP SUDO
-    # 获取最新稳定 release 名称 like "go1.25.6"
-    LATEST_RAW="$(curl -fsS https://go.dev/VERSION?m=text || true)"
+    local LATEST_RAW REQ_VER CUR_VER TMP GO_URL
+
+    # 1. 获取最新版本（增加了清洗逻辑，修复本次报错的核心）
+    # 解释：head -n 1 确保只拿第一行，tr -d '[:space:]' 删掉换行符和空格
+    LATEST_RAW="$(curl -fsS https://go.dev/VERSION?m=text | head -n 1 | tr -d '[:space:]')"
+    
+    # 容错：如果获取为空，直接报错退出
     if [ -z "$LATEST_RAW" ]; then
-        echo "Failed to fetch latest Go version from go.dev"
+        echo "Error: Failed to fetch latest Go version."
         return 1
     fi
-    REQ_VER="${LATEST_RAW#go}"   # 去掉前缀 go
 
-    # 获取当前已安装 go 版本（无则视为 0）
+    REQ_VER="${LATEST_RAW#go}"
+
+    # 2. 检查当前版本
     if command -v go >/dev/null 2>&1; then
-        CUR_VER="$(go version 2>/dev/null | awk '{print $3}' | sed 's/^go//')"
+        CUR_VER="$(go version | awk '{print $3}' | sed 's/^go//')"
     else
         CUR_VER="0"
     fi
 
-    # 版本比较：如果已安装 >= 要求则退出
+    # 3. 版本判断 (使用 sort -V，GHA 环境支持)
     if [ "$(printf '%s\n' "$CUR_VER" "$REQ_VER" | sort -V | head -n1)" = "$REQ_VER" ] && [ "$CUR_VER" != "0" ]; then
-        echo "Go $CUR_VER already >= latest $REQ_VER, skip install."
+        echo "Go $CUR_VER is already up to date."
         return 0
     fi
 
-    echo "Installing Go $REQ_VER (current: $CUR_VER)..."
+    echo "Installing Go $REQ_VER..."
 
-    OS="linux"
-    case "$(uname -m)" in
-        x86_64|amd64) ARCH="amd64" ;;
-        aarch64|arm64) ARCH="arm64" ;;
-        i386|i686) ARCH="386" ;;
-        armv7*|armv6l) ARCH="armv6l" ;;  # fallback for armv6/7
-        *) echo "Unsupported arch: $(uname -m)"; return 1 ;;
-    esac
-
-    TMP="/tmp/go${REQ_VER}.${OS}-${ARCH}.tar.gz"
-    local URL="https://go.dev/dl/go${REQ_VER}.${OS}-${ARCH}.tar.gz"
-
-    echo "Downloading $URL ..."
-    if ! curl -fsSL "$URL" -o "$TMP"; then
-        echo "Download failed: $URL"
-        [ -f "$TMP" ] && rm -f "$TMP"
+    # 4. 下载
+    TMP="/tmp/go.tar.gz"
+    GO_URL="https://go.dev/dl/go${REQ_VER}.linux-amd64.tar.gz"
+    
+    echo "Downloading $GO_URL ..."
+    if ! curl -fsSL "$GO_URL" -o "$TMP"; then
+        echo "Download failed. Please check the version number or network."
         return 1
     fi
 
-    # 使用 sudo（若当前不是 root）
-    if [ "$(id -u)" -ne 0 ]; then
-        SUDO="sudo"
-    else
-        SUDO=""
-    fi
-
-    echo "Installing to /usr/local (requires sudo if not root)..."
-    $SUDO rm -rf /usr/local/go
-    $SUDO tar -C /usr/local -xzf "$TMP" || { echo "tar extraction failed"; rm -f "$TMP"; return 1; }
+    # 5. 安装
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf "$TMP"
     rm -f "$TMP"
 
-    # 把 /usr/local/go/bin 加到当前 PATH，并持久化以供后续 shells 使用
+    # 6. 配置 GHA 环境变量 (重要！)
+    # 这一步确保后续的 step 能直接用 `go` 命令
+    echo "/usr/local/go/bin" >> "$GITHUB_PATH"
+    
+    # 同时也为当前脚本后续可能的逻辑 export
     export PATH="/usr/local/go/bin:$PATH"
-    echo 'export PATH=/usr/local/go/bin:$PATH' | $SUDO tee /etc/profile.d/go.sh >/dev/null
-    $SUDO chmod 644 /etc/profile.d/go.sh
 
-    echo "Go $REQ_VER installed. Current go version: $(go version || true)"
-    return 0
+    echo "Successfully installed Go $REQ_VER"
 }
 
-# 调用（执行脚本时默认安装最新 Go）
-ensure_go_latest || { echo "ensure_go_latest failed"; exit 1; }
+ensure_go_latest
