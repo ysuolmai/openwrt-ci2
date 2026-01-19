@@ -342,43 +342,45 @@ if [ -f "$RUST_FILE" ]; then
 fi
 
 
+#安装最新的go
 ensure_go_latest() {
-    local LATEST_RAW REQ_VER CUR_VER TMP GO_URL
+    local LATEST_VER CUR_VER TMP GO_URL
 
-    # 1. 获取最新版本（增加了清洗逻辑，修复本次报错的核心）
-    # 解释：head -n 1 确保只拿第一行，tr -d '[:space:]' 删掉换行符和空格
-    LATEST_RAW="$(curl -fsS https://go.dev/VERSION?m=text | head -n 1 | tr -d '[:space:]')"
-    
-    # 容错：如果获取为空，直接报错退出
-    if [ -z "$LATEST_RAW" ]; then
+    # 1. 获取最新版本 (e.g. "go1.25.6")
+    # 清洗数据：只取第一行，去掉空格换行
+    LATEST_VER="$(curl -fsS https://go.dev/VERSION?m=text | head -n 1 | tr -d '[:space:]')"
+
+    if [ -z "$LATEST_VER" ]; then
         echo "Error: Failed to fetch latest Go version."
         return 1
     fi
 
-    REQ_VER="${LATEST_RAW#go}"
-
-    # 2. 检查当前版本
+    # 2. 检查当前已安装版本
+    # 为了方便比较，这里还是提取纯数字版本号 (e.g. "1.25.6")
+    local LATEST_NUM="${LATEST_VER#go}"
+    
     if command -v go >/dev/null 2>&1; then
         CUR_VER="$(go version | awk '{print $3}' | sed 's/^go//')"
     else
         CUR_VER="0"
     fi
 
-    # 3. 版本判断 (使用 sort -V，GHA 环境支持)
-    if [ "$(printf '%s\n' "$CUR_VER" "$REQ_VER" | sort -V | head -n1)" = "$REQ_VER" ] && [ "$CUR_VER" != "0" ]; then
+    # 3. 版本对比 (比较纯数字部分)
+    if [ "$(printf '%s\n' "$CUR_VER" "$LATEST_NUM" | sort -V | head -n1)" = "$LATEST_NUM" ] && [ "$CUR_VER" != "0" ]; then
         echo "Go $CUR_VER is already up to date."
         return 0
     fi
 
-    echo "Installing Go $REQ_VER..."
+    echo "Installing $LATEST_VER ..."
 
-    # 4. 下载
+    # 4. 拼接 URL (直接使用 go1.25.6)
+    # 结果: https://go.dev/dl/go1.25.6.linux-amd64.tar.gz
+    GO_URL="https://go.dev/dl/${LATEST_VER}.linux-amd64.tar.gz"
     TMP="/tmp/go.tar.gz"
-    GO_URL="https://go.dev/dl/go${REQ_VER}.linux-amd64.tar.gz"
     
     echo "Downloading $GO_URL ..."
     if ! curl -fsSL "$GO_URL" -o "$TMP"; then
-        echo "Download failed. Please check the version number or network."
+        echo "Download failed: $GO_URL"
         return 1
     fi
 
@@ -387,14 +389,11 @@ ensure_go_latest() {
     sudo tar -C /usr/local -xzf "$TMP"
     rm -f "$TMP"
 
-    # 6. 配置 GHA 环境变量 (重要！)
-    # 这一步确保后续的 step 能直接用 `go` 命令
+    # 6. 设置 GitHub Actions 路径
     echo "/usr/local/go/bin" >> "$GITHUB_PATH"
-    
-    # 同时也为当前脚本后续可能的逻辑 export
     export PATH="/usr/local/go/bin:$PATH"
 
-    echo "Successfully installed Go $REQ_VER"
+    echo "Successfully installed $LATEST_VER"
 }
 
 ensure_go_latest
