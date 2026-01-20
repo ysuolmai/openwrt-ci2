@@ -343,57 +343,44 @@ fi
 
 
 #安装最新的go
-ensure_go_latest() {
-    local LATEST_VER CUR_VER TMP GO_URL
-
-    # 1. 获取最新版本 (e.g. "go1.25.6")
-    # 清洗数据：只取第一行，去掉空格换行
-    LATEST_VER="$(curl -fsS https://go.dev/VERSION?m=text | head -n 1 | tr -d '[:space:]')"
-
-    if [ -z "$LATEST_VER" ]; then
-        echo "Error: Failed to fetch latest Go version."
-        return 1
-    fi
-
-    # 2. 检查当前已安装版本
-    # 为了方便比较，这里还是提取纯数字版本号 (e.g. "1.25.6")
-    local LATEST_NUM="${LATEST_VER#go}"
+#修复go
+ensure_latest_go() {
+    echo "🔍 Checking latest Go version..."
     
+    # 1. 获取最新版本号 (关键：head 和 tr 用于清洗数据，防止 URL 报错)
+    # 结果示例: "go1.25.6"
+    local LATEST_VER
+    LATEST_VER="$(curl -s "https://go.dev/VERSION?m=text" | head -n 1 | tr -d '[:space:]')"
+
+    # 2. 简单检查：如果当前已经是这个版本，就跳过 (节省时间)
     if command -v go >/dev/null 2>&1; then
-        CUR_VER="$(go version | awk '{print $3}' | sed 's/^go//')"
-    else
-        CUR_VER="0"
+        local CUR_VER
+        CUR_VER="go$(go version | awk '{print $3}' | sed 's/^go//')"
+        if [ "$CUR_VER" == "$LATEST_VER" ]; then
+            echo "✅ Go is already at the latest version ($LATEST_VER). Skipping."
+            return 0
+        fi
     fi
 
-    # 3. 版本对比 (比较纯数字部分)
-    if [ "$(printf '%s\n' "$CUR_VER" "$LATEST_NUM" | sort -V | head -n1)" = "$LATEST_NUM" ] && [ "$CUR_VER" != "0" ]; then
-        echo "Go $CUR_VER is already up to date."
-        return 0
-    fi
+    # 3. 拼接下载地址 (GitHub Actions 都是 linux-amd64)
+    local URL="https://go.dev/dl/${LATEST_VER}.linux-amd64.tar.gz"
+    echo "⬇️  Installing ${LATEST_VER} from ${URL}..."
 
-    echo "Installing $LATEST_VER ..."
+    # 4. 流式下载并解压 (一行搞定，不占用临时文件空间)
+    # 如果下载或解压出错，立即退出
+    curl -fsSL "$URL" | sudo tar -C /usr/local -xzf - || {
+        echo "❌ Install failed."
+        exit 1
+    }
 
-    # 4. 拼接 URL (直接使用 go1.25.6)
-    # 结果: https://go.dev/dl/go1.25.6.linux-amd64.tar.gz
-    GO_URL="https://go.dev/dl/${LATEST_VER}.linux-amd64.tar.gz"
-    TMP="/tmp/go.tar.gz"
-    
-    echo "Downloading $GO_URL ..."
-    if ! curl -fsSL "$GO_URL" -o "$TMP"; then
-        echo "Download failed: $GO_URL"
-        return 1
-    fi
-
-    # 5. 安装
-    sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "$TMP"
-    rm -f "$TMP"
-
-    # 6. 设置 GitHub Actions 路径
+    # 5. 【关键】写入 GITHUB_PATH，让后续 Steps 生效
     echo "/usr/local/go/bin" >> "$GITHUB_PATH"
+    
+    # 让当前 step 后续命令也能用
     export PATH="/usr/local/go/bin:$PATH"
-
-    echo "Successfully installed $LATEST_VER"
+    
+    echo "✅ Successfully installed ${LATEST_VER}"
 }
 
-ensure_go_latest
+# 执行函数
+ensure_latest_go
