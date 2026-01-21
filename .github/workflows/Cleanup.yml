@@ -1,0 +1,77 @@
+name: Repository Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep_releases:
+        description: '保留最新 Release 的数量 (Keep latest N releases)'
+        required: true
+        default: '4'
+        type: string
+      delete_cache:
+        description: '是否删除所有缓存? (Delete all caches)'
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 需要权限删除 release 和 tag
+      actions: write   # 需要权限删除 workflow runs 和 caches
+    
+    steps:
+      - name: Delete Old Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KEEP: ${{ inputs.keep_releases }}
+        run: |
+          echo "Fetching releases..."
+          # 获取所有 release，按创建时间倒序排列
+          # jq 逻辑: .[$KEEP:] 表示跳过前 KEEP 个元素，选择剩下的所有
+          # xargs 逻辑: 对每一个 tagName 执行删除操作
+          
+          gh release list --limit 1000 --json tagName,publishedAt --order desc | \
+          jq -r ".[$KEEP:] | .[].tagName" | \
+          while read -r tagName; do
+            if [ -n "$tagName" ]; then
+              echo "Deleting release and tag: $tagName"
+              gh release delete "$tagName" --yes --cleanup-tag
+            fi
+          done
+
+      - name: Delete Workflow Runs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          echo "Fetching workflow runs..."
+          # 获取所有 workflow runs
+          # 过滤掉当前正在运行的 ID (以免把自己删了导致后续步骤无法执行)
+          
+          gh run list --limit 1000 --json databaseId -q ".[].databaseId" | \
+          grep -v "$CURRENT_RUN_ID" | \
+          while read -r runId; do
+            if [ -n "$runId" ]; then
+              echo "Deleting workflow run: $runId"
+              gh run delete "$runId"
+            fi
+          done
+
+      - name: Delete Caches
+        if: ${{ inputs.delete_cache == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Deleting all caches..."
+          # 列出所有 cache key 并删除
+          # 如果没有 cache，gh cache list 可能会返回空，这里加个容错
+          
+          gh cache list --limit 1000 --json id -q '.[].id' | \
+          while read -r cacheId; do
+             if [ -n "$cacheId" ]; then
+                echo "Deleting cache ID: $cacheId"
+                gh cache delete "$cacheId"
+             fi
+          done || echo "No caches found or error deleting caches."
