@@ -18,21 +18,23 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 需要权限删除 release 和 tag
-      actions: write   # 需要权限删除 workflow runs 和 caches
-    
+      contents: write
+      actions: write
+    # 修复点：全局设置仓库上下文，这样不需要 checkout 代码也能运行
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+
     steps:
       - name: Delete Old Releases
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEEP: ${{ inputs.keep_releases }}
         run: |
-          echo "Fetching releases..."
-          # 获取所有 release，按创建时间倒序排列
-          # jq 逻辑: .[$KEEP:] 表示跳过前 KEEP 个元素，选择剩下的所有
-          # xargs 逻辑: 对每一个 tagName 执行删除操作
+          echo "Fetching releases for $GH_REPO..."
           
-          gh release list --limit 1000 --json tagName,publishedAt --order desc | \
+          # 获取所有 release，按创建时间倒序排列
+          # 跳过前 KEEP 个，删除剩下的
+          gh release list --limit 1000 --json tagName --order desc | \
           jq -r ".[$KEEP:] | .[].tagName" | \
           while read -r tagName; do
             if [ -n "$tagName" ]; then
@@ -43,13 +45,11 @@ jobs:
 
       - name: Delete Workflow Runs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
           echo "Fetching workflow runs..."
-          # 获取所有 workflow runs
-          # 过滤掉当前正在运行的 ID (以免把自己删了导致后续步骤无法执行)
           
+          # 过滤掉当前正在运行的 ID
           gh run list --limit 1000 --json databaseId -q ".[].databaseId" | \
           grep -v "$CURRENT_RUN_ID" | \
           while read -r runId; do
@@ -61,13 +61,10 @@ jobs:
 
       - name: Delete Caches
         if: ${{ inputs.delete_cache == true }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Deleting all caches..."
-          # 列出所有 cache key 并删除
-          # 如果没有 cache，gh cache list 可能会返回空，这里加个容错
           
+          # 列出所有 cache key 并删除
           gh cache list --limit 1000 --json id -q '.[].id' | \
           while read -r cacheId; do
              if [ -n "$cacheId" ]; then
