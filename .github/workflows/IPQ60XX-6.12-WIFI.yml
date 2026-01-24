@@ -114,6 +114,16 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
+
+    - name: Setup Go (Latest Stable)
+      uses: actions/setup-go@v5
+      with:
+        # 'stable' 会自动查找当前 Go 官方发布的最新版本
+        go-version: 'stable'
+        # 强制检查最新版 (防止 Runner 缓存了旧版本)
+        check-latest: true
+
+
     - name: Compile Firmware(开始编译固件)
       id: compile
       run: |
