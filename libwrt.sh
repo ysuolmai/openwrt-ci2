@@ -341,46 +341,62 @@ if [ -f "$RUST_FILE" ]; then
 	cd $PKG_PATH && echo "rust has been fixed!"
 fi
 
+patch_openwrt_go() {
+    # 1. 确定 Makefile 路径 (通常在 feeds/packages/lang/golang/golang/Makefile)
+    # 使用 find 增加容错，防止目录结构略有不同
+    local GO_MAKEFILE
+    GO_MAKEFILE=$(find feeds -name "Makefile" | grep "lang/golang/golang/Makefile" | head -n 1)
 
-#安装最新的go
-#修复go
-ensure_latest_go() {
-    echo "🔍 Checking latest Go version..."
-    
-    # 1. 获取最新版本号 (关键：head 和 tr 用于清洗数据，防止 URL 报错)
-    # 结果示例: "go1.25.6"
+    if [ -z "$GO_MAKEFILE" ]; then
+        echo "❌ Error: Could not find OpenWrt Go Makefile!"
+        return 1
+    fi
+    echo "found go makefile: $GO_MAKEFILE"
+
+    # 2. 获取 Go 最新版本号 (例如 1.25.6)
     local LATEST_VER
-    LATEST_VER="$(curl -s "https://go.dev/VERSION?m=text" | head -n 1 | tr -d '[:space:]')"
-
-    # 2. 简单检查：如果当前已经是这个版本，就跳过 (节省时间)
-    if command -v go >/dev/null 2>&1; then
-        local CUR_VER
-        CUR_VER="go$(go version | awk '{print $3}' | sed 's/^go//')"
-        if [ "$CUR_VER" == "$LATEST_VER" ]; then
-            echo "✅ Go is already at the latest version ($LATEST_VER). Skipping."
-            return 0
-        fi
+    LATEST_VER="$(curl -s "https://go.dev/VERSION?m=text" | head -n 1 | tr -d '[:space:]' | sed 's/^go//')"
+    
+    if [ -z "$LATEST_VER" ]; then
+        echo "❌ Error: Failed to fetch latest Go version."
+        return 1
     fi
 
-    # 3. 拼接下载地址 (GitHub Actions 都是 linux-amd64)
-    local URL="https://go.dev/dl/${LATEST_VER}.linux-amd64.tar.gz"
-    echo "⬇️  Installing ${LATEST_VER} from ${URL}..."
+    # 3. 检查当前 Makefile 里的版本
+    local CUR_VER
+    CUR_VER=$(grep "^PKG_VERSION:=" "$GO_MAKEFILE" | cut -d= -f2)
+    echo "Current OpenWrt Go version: $CUR_VER"
+    echo "Target Latest Go version:   $LATEST_VER"
 
-    # 4. 流式下载并解压 (一行搞定，不占用临时文件空间)
-    # 如果下载或解压出错，立即退出
-    curl -fsSL "$URL" | sudo tar -C /usr/local -xzf - || {
-        echo "❌ Install failed."
-        exit 1
-    }
+    if [ "$CUR_VER" == "$LATEST_VER" ]; then
+        echo "✅ Version is already up to date."
+        return 0
+    fi
 
-    # 5. 【关键】写入 GITHUB_PATH，让后续 Steps 生效
-    echo "/usr/local/go/bin" >> "$GITHUB_PATH"
-    
-    # 让当前 step 后续命令也能用
-    export PATH="/usr/local/go/bin:$PATH"
-    
-    echo "✅ Successfully installed ${LATEST_VER}"
+    # 4. 计算源码包的 SHA256 Hash (这是最关键的一步，不改 Hash 会导致下载校验失败)
+    # 注意：OpenWrt 编译 Go 用的是 src 包，不是 linux-amd64 包！
+    echo "☁️  Downloading source info to calculate hash..."
+    local SRC_URL="https://go.dev/dl/go${LATEST_VER}.src.tar.gz"
+    local NEW_HASH
+    NEW_HASH=$(curl -sL "$SRC_URL" | sha256sum | awk '{print $1}')
+
+    if [ -z "$NEW_HASH" ] || [ ${#NEW_HASH} -ne 64 ]; then
+        echo "❌ Error: Failed to calculate SHA256 hash."
+        return 1
+    fi
+    echo "New Hash: $NEW_HASH"
+
+    # 5. 使用 sed 修改 Makefile
+    echo "🔧 Patching Makefile..."
+    sed -i "s/^PKG_VERSION:=.*/PKG_VERSION:=$LATEST_VER/" "$GO_MAKEFILE"
+    sed -i "s/^PKG_HASH:=.*/PKG_HASH:=$NEW_HASH/" "$GO_MAKEFILE"
+
+    # 6. 验证修改
+    echo "--------------------------------------"
+    grep -E "^PKG_VERSION|^PKG_HASH" "$GO_MAKEFILE"
+    echo "--------------------------------------"
+    echo "✅ OpenWrt Go toolchain patched to $LATEST_VER successfully!"
 }
 
-# 执行函数
-ensure_latest_go
+# 执行补丁
+patch_openwrt_go || exit 1
