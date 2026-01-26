@@ -338,7 +338,7 @@ if [ -f "$RUST_FILE" ]; then
 	sed -i 's/ci-llvm=true/ci-llvm=false/g' $RUST_FILE
 	patch $RUST_FILE ${GITHUB_WORKSPACE}/scripts/rust-makefile.patch
 
-	cd $PKG_PATH && echo "rust has been fixed!"
+	echo "rust has been fixed!"
 fi
 
 patch_openwrt_go() {
