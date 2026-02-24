@@ -341,6 +341,12 @@ if [ -f "$RUST_FILE" ]; then
 	echo "rust has been fixed!"
 fi
 
+
+# 强制在 mbedtls 的 Makefile 中添加取消 Fortify 的 flag
+    sed -i 's/TARGET_CFLAGS +=/TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 /g' package/libs/mbedtls/Makefile
+    # 如果该 Makefile 还在 feeds 里（取决于你的版本），也执行一次
+    find feeds/libs/mbedtls -name Makefile -exec sed -i 's/TARGET_CFLAGS +=/TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 /g' {} + || true
+
 patch_openwrt_go() {
     # 1. 确定 Makefile 路径 (通常在 feeds/packages/lang/golang/golang/Makefile)
     # 使用 find 增加容错，防止目录结构略有不同
