@@ -341,11 +341,34 @@ if [ -f "$RUST_FILE" ]; then
 	echo "rust has been fixed!"
 fi
 
+# --- GCC 14 & mbedtls Target Mismatch Fix ---
+fix_mbedtls_gcc14() {
+    echo "Applying GCC 14 target mismatch fix for mbedtls..."
+    
+    # 1. 修改 Makefile 注入编译选项，禁用 Fortify 内联
+    # 寻找所有 mbedtls 的 Makefile (包括 feeds 和 package 目录)
+    find . -path "*/libs/mbedtls/Makefile" | while read -r mk; do
+        echo "Patching $mk"
+        # 确保 -U_FORTIFY_SOURCE 在最后，以覆盖默认配置
+        sed -i 's/TARGET_CFLAGS +=/TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 /g' "$mk"
+        # 针对 Ninja 构建系统，强制传递给 CMake
+        sed -i '/CMAKE_OPTIONS +=/a \	-DCMAKE_C_FLAGS="$(TARGET_CFLAGS) -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0"' "$mk"
+    done
 
-# 强制在 mbedtls 的 Makefile 中添加取消 Fortify 的 flag
-    sed -i 's/TARGET_CFLAGS +=/TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 /g' package/libs/mbedtls/Makefile
-    # 如果该 Makefile 还在 feeds 里（取决于你的版本），也执行一次
-    find feeds/libs/mbedtls -name Makefile -exec sed -i 's/TARGET_CFLAGS +=/TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 /g' {} + || true
+    # 2. 如果 build_dir 已经存在（二次编译），直接手术级修改 ninja 配置
+    # 这是防止 ninja 缓存了旧的编译参数
+    if [ -d "build_dir/target-aarch64_cortex-a53_musl/mbedtls-3.6.5" ]; then
+        echo "Cleaning up existing mbedtls build artifacts..."
+        find build_dir/target-aarch64_cortex-a53_musl/mbedtls-3.6.5 -name "*.ninja" -exec sed -i 's/-D_FORTIFY_SOURCE=1/-D_FORTIFY_SOURCE=0/g' {} +
+    fi
+    
+    # 3. 强制清理 mbedtls 状态，确保下次编译重新触发配置
+    make package/libs/mbedtls/clean || true
+}
+
+# 执行修复
+fix_mbedtls_gcc14
+
 
 patch_openwrt_go() {
     # 1. 确定 Makefile 路径 (通常在 feeds/packages/lang/golang/golang/Makefile)
