@@ -341,23 +341,39 @@ if [ -f "$RUST_FILE" ]; then
 	echo "rust has been fixed!"
 fi
 
-# --- 针对 GCC 14 的 mbedtls 强力修复 ---
-echo "Running mbedtls GCC 14 compatibility fix..."
+# --- 彻底解决 GCC 14 + mbedtls target mismatch 问题 (增强版) ---
+echo "Executing Enhanced Hard-fix for mbedtls GCC 14..."
 
-# 1. 预先扫描所有可能的 mbedtls 路径进行 Makefile 修改
-# 这一步在 defconfig 之前做是完美的
+# 1. 修改 Makefile 注入：确保 -U 在最末尾，强制覆盖环境中的 _FORTIFY_SOURCE
 find . -path "*/libs/mbedtls/Makefile" | while read -r mk; do
-    echo "Patching $mk"
-    # 使用 sed 强行在 CFLAGS 后面追加覆盖参数
-    # 无论原来是什么，最后都会加上 -U_FORTIFY_SOURCE
-    sed -i 's/TARGET_CFLAGS +=/TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 /g' "$mk"
+    echo "Hard-patching $mk"
+    # 移除可能存在的旧注入，避免重复
+    sed -i 's/-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0//g' "$mk"
+    # 在 TARGET_CFLAGS 赋值行末尾精准注入
+    sed -i '/TARGET_CFLAGS +=/ s/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0/' "$mk"
+    # 针对 CMake 编译体系（mbedtls 3.x）强制传递参数
+    if ! grep -q "CMAKE_C_FLAGS" "$mk"; then
+        sed -i '/CMAKE_OPTIONS +=/a \	-DCMAKE_C_FLAGS="$(TARGET_CFLAGS) -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0"' "$mk"
+    fi
 done
 
-# 2. 注入一个全局全局宏（这是最保险的）
-# OpenWrt 的构建系统在编译时会包含 include/package-defaults.mk
-# 我们直接把这个 flag 塞进全局变量，确保 Ninja 无论如何都能读到
+# 2. 全局保底：直接修改 OpenWrt 核心的安全定义文件
+# 很多时候包 Makefile 里的 CFLAGS 会被 hardened.mk 强行 override
+if [ -f "include/hardened.mk" ]; then
+    echo "Patching global hardened.mk to prevent GCC 14 inlining errors"
+    sed -i 's/-D_FORTIFY_SOURCE=1/-D_FORTIFY_SOURCE=0/g' include/hardened.mk
+    sed -i 's/-D_FORTIFY_SOURCE=2/-D_FORTIFY_SOURCE=0/g' include/hardened.mk
+fi
+
+# 3. 注入全局 local.mk (保持你现有的这步，它是很好的保底)
 mkdir -p include
 echo "TARGET_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" >> include/local.mk
+
+# 4. 特殊处理：针对 aarch64 的汇编冲突
+# 如果 Makefile 还没创建（初次编译），我们可以预设一个全局环境变量
+export EXTRA_CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0"
+
+echo "mbedtls GCC 14 fix applied successfully."
 
 
 patch_openwrt_go() {
