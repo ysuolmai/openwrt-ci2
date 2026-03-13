@@ -150,9 +150,6 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-wireguard=y"
     "CONFIG_PACKAGE_wireguard-tools=y"
     "CONFIG_PACKAGE_kmod-wireguard=y"
-    # 修复 mbedtls 共享库
-    "CONFIG_PACKAGE_libmbedtls=y"
-    "CONFIG_LIBMBEDTLS_SHARED=y"
 )
 
 DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
