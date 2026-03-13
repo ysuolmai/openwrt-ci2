@@ -384,3 +384,11 @@ patch_openwrt_go() {
 }
 
 patch_openwrt_go || exit 1
+
+# 修复 hostapd he_mu_edca 编译错误
+echo "Patching hostapd he_mu_edca..."
+find . -path "*/services/hostapd*" -name "*.c" | xargs grep -l "he_mu_edca" | while read -r f; do
+    sed -i '/he_mu_edca/d' "$f"
+    echo "Patched: $f"
+done
+
