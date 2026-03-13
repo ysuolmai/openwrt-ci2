@@ -308,13 +308,21 @@ if ! grep -q "CMAKE_POLICY_VERSION_MINIMUM" include/cmake.mk; then
 fi
 
 # ============================================================
-# 修复 mbedtls 编译：移除 gc-sections（与 no-lto 组合导致链接失败）
+# 修复默认依赖：mbedtls → openssl（NSS 分支需要）
 # ============================================================
-echo "Patching mbedtls build flags..."
-find . -path "*/libs/mbedtls/Makefile" | while read -r mk; do
-    sed -i 's/PKG_BUILD_FLAGS:=no-mips16 gc-sections no-lto/PKG_BUILD_FLAGS:=no-mips16 no-lto/' "$mk"
-    echo "mbedtls patched: $mk"
-done
+fix_mk_def_depends() {
+    echo "Fixing default SSL dependencies..."
+    sed -i 's/libustream-mbedtls/libustream-openssl/g' include/target.mk 2>/dev/null && \
+        echo "target.mk: libustream-mbedtls → libustream-openssl" || \
+        echo "target.mk not found or already patched"
+
+    if [ -f target/linux/qualcommax/Makefile ]; then
+        sed -i 's/wpad-openssl/wpad-mesh-openssl/g' target/linux/qualcommax/Makefile
+        echo "qualcommax Makefile: wpad-openssl → wpad-mesh-openssl"
+    fi
+}
+
+fix_mk_def_depends
 
 # ============================================================
 # 修复 rust 编译
