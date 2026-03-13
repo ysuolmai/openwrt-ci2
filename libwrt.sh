@@ -313,12 +313,21 @@ fix_mk_def_depends() {
         echo "target.mk: libustream-mbedtls → libustream-openssl" || \
         echo "target.mk not found or already patched"
 
-    if [ -f target/linux/qualcommax/Makefile ]; then
-        sed -i 's/wpad-openssl/wpad-mesh-openssl/g' target/linux/qualcommax/Makefile
-        echo "qualcommax Makefile: wpad-openssl → wpad-mesh-openssl"
+    # NOWIFI 不需要 wpad/hostapd，跳过
+    if [[ "$FIRMWARE_TAG" != *"NOWIFI"* ]]; then
+        if [ -f target/linux/qualcommax/Makefile ]; then
+            sed -i 's/wpad-openssl/wpad-mesh-openssl/g' target/linux/qualcommax/Makefile
+            echo "qualcommax Makefile: wpad-openssl → wpad-mesh-openssl"
+        fi
+    else
+        # NOWIFI：直接从 qualcommax Makefile 里删掉所有 wpad/hostapd 依赖
+        if [ -f target/linux/qualcommax/Makefile ]; then
+            sed -i 's/\s*wpad[^ ]*\s*\\\?//g' target/linux/qualcommax/Makefile
+            sed -i 's/\s*hostapd[^ ]*\s*\\\?//g' target/linux/qualcommax/Makefile
+            echo "qualcommax Makefile: removed wpad/hostapd for NOWIFI"
+        fi
     fi
 }
-
 fix_mk_def_depends
 
 # ============================================================
