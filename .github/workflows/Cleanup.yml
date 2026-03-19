@@ -1,0 +1,74 @@
+name: Repository Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep_releases:
+        description: '保留最新 Release 的数量 (Keep latest N releases)'
+        required: true
+        default: '4'
+        type: string
+      delete_cache:
+        description: '是否删除所有缓存? (Delete all caches)'
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    # 修复点：全局设置仓库上下文，这样不需要 checkout 代码也能运行
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Delete Old Releases
+        env:
+          KEEP: ${{ inputs.keep_releases }}
+        run: |
+          echo "Fetching releases for $GH_REPO..."
+          
+          # 获取所有 release，按创建时间倒序排列
+          # 跳过前 KEEP 个，删除剩下的
+          gh release list --limit 1000 --json tagName --order desc | \
+          jq -r ".[$KEEP:] | .[].tagName" | \
+          while read -r tagName; do
+            if [ -n "$tagName" ]; then
+              echo "Deleting release and tag: $tagName"
+              gh release delete "$tagName" --yes --cleanup-tag
+            fi
+          done
+
+      - name: Delete Workflow Runs
+        env:
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          echo "Fetching workflow runs..."
+          
+          # 过滤掉当前正在运行的 ID
+          gh run list --limit 1000 --json databaseId -q ".[].databaseId" | \
+          grep -v "$CURRENT_RUN_ID" | \
+          while read -r runId; do
+            if [ -n "$runId" ]; then
+              echo "Deleting workflow run: $runId"
+              gh run delete "$runId"
+            fi
+          done
+
+      - name: Delete Caches
+        if: ${{ inputs.delete_cache == true }}
+        run: |
+          echo "Deleting all caches..."
+          
+          # 列出所有 cache key 并删除
+          gh cache list --limit 1000 --json id -q '.[].id' | \
+          while read -r cacheId; do
+             if [ -n "$cacheId" ]; then
+                echo "Deleting cache ID: $cacheId"
+                gh cache delete "$cacheId"
+             fi
+          done || echo "No caches found or error deleting caches."
