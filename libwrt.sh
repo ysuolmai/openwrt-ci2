@@ -305,63 +305,6 @@ if ! grep -q "CMAKE_POLICY_VERSION_MINIMUM" include/cmake.mk; then
 fi
 
 # ============================================================
-# 修复默认依赖：mbedtls → openssl（NSS 分支需要）
-# ============================================================
-fix_mk_def_depends() {
-    echo "Fixing default SSL dependencies..."
-    sed -i 's/libustream-mbedtls/libustream-openssl/g' include/target.mk 2>/dev/null && \
-        echo "target.mk: libustream-mbedtls → libustream-openssl" || \
-        echo "target.mk not found or already patched"
-
-    # NOWIFI 不需要 wpad/hostapd，跳过
-    if [[ "$FIRMWARE_TAG" != *"NOWIFI"* ]]; then
-        if [ -f target/linux/qualcommax/Makefile ]; then
-            sed -i 's/wpad-openssl/wpad-mesh-openssl/g' target/linux/qualcommax/Makefile
-            echo "qualcommax Makefile: wpad-openssl → wpad-mesh-openssl"
-        fi
-    else
-        # NOWIFI：直接从 qualcommax Makefile 里删掉所有 wpad/hostapd 依赖
-        if [ -f target/linux/qualcommax/Makefile ]; then
-            sed -i 's/\s*wpad[^ ]*\s*\\\?//g' target/linux/qualcommax/Makefile
-            sed -i 's/\s*hostapd[^ ]*\s*\\\?//g' target/linux/qualcommax/Makefile
-            echo "qualcommax Makefile: removed wpad/hostapd for NOWIFI"
-        fi
-    fi
-}
-fix_mk_def_depends
-
-
-# ============================================================
-# 修复 config：彻底用 openssl 替换 mbedtls
-# ============================================================
-fix_ssl_config() {
-    echo "Fixing SSL config: mbedtls → openssl..."
-
-    # 删除所有 mbedtls 相关配置
-    sed -i '/CONFIG_MBEDTLS_/d' .config
-    sed -i '/CONFIG_PACKAGE_libmbedtls/d' .config
-    sed -i '/CONFIG_LIBMBEDTLS_SHARED/d' .config
-    sed -i '/CONFIG_PACKAGE_libustream-mbedtls/d' .config
-    sed -i '/CONFIG_PACKAGE_apk-mbedtls/d' .config
-
-    # 明确禁用 mbedtls
-    cat >> .config << 'EOF'
-# CONFIG_PACKAGE_libmbedtls is not set
-# CONFIG_PACKAGE_libustream-mbedtls is not set
-# CONFIG_PACKAGE_apk-mbedtls is not set
-# CONFIG_SIGNED_PACKAGES is not set
-EOF
-
-    # 确保 openssl 的 ustream 被启用
-    sed -i '/CONFIG_PACKAGE_libustream-openssl/d' .config
-    echo "CONFIG_PACKAGE_libustream-openssl=y" >> .config
-
-    echo "SSL config fix done."
-}
-
-fix_ssl_config
-
-# ============================================================
 # 修复 rust 编译
 # ============================================================
 RUST_FILE=$(find ./feeds/packages/ -maxdepth 3 -type f -wholename "*/rust/Makefile")
@@ -425,10 +368,4 @@ patch_openwrt_go() {
 
 patch_openwrt_go || exit 1
 
-# 修复 hostapd he_mu_edca 编译错误
-echo "Patching hostapd he_mu_edca..."
-find . -path "*/services/hostapd*" -name "*.c" | xargs grep -l "he_mu_edca" | while read -r f; do
-    sed -i '/he_mu_edca/d' "$f"
-    echo "Patched: $f"
-done
 
