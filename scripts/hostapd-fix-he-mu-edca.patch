@@ -1,0 +1,7 @@
+--- a/src/ap/hostapd.c
++++ b/src/ap/hostapd.c
+@@ -4722,7 +4722,9 @@ static int hostapd_fill_csa_settings(
+ {
++#ifdef CONFIG_IEEE80211AX
+ 	hapd->iface->conf->he_mu_edca.he_qos_info &= 0xfff0;
++#endif /* CONFIG_IEEE80211AX */
