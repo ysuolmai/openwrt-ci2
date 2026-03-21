@@ -156,8 +156,10 @@ DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     provided_config_lines+=(
-        "CONFIG_PACKAGE_hostapd-common=n"
-        "CONFIG_PACKAGE_wpad-openssl=n"
+        "# CONFIG_PACKAGE_hostapd-common is not set"
+        "# CONFIG_PACKAGE_wpad-openssl is not set"
+        "# CONFIG_PACKAGE_wpad-full-openssl is not set"   # ← 加这个！
+        "# CONFIG_PACKAGE_wpad-basic-openssl is not set"
     )
 
     echo "[NOWIFI] preparing nowifi dtsi files..."
@@ -368,4 +370,9 @@ patch_openwrt_go() {
 
 patch_openwrt_go || exit 1
 
+# 修复 hostapd he_mu_edca 编译错误
+HOSTAPD_SRC=$(find package/network/services/hostapd -name "hostapd.c" 2>/dev/null | head -1)
+# 更直接的方式：打 patch 到 hostapd package patch 目录
+cp "${GITHUB_WORKSPACE}/scripts/hostapd-fix-he-mu-edca.patch" \
+   package/network/services/hostapd/patches/
 
