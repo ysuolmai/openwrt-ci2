@@ -182,6 +182,9 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
       -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' \
       -e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
 
+    echo "=== checking what depends on wpad ==="
+    grep -r "wpad\|hostapd" feeds/*/package --include="Makefile" -l | head -20
+
     echo "qualcommax set up nowifi successfully!"
 
 else
