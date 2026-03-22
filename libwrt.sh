@@ -104,7 +104,7 @@ keywords_to_delete=(
     "smartdns" "kucat" "bootstrap"
 )
 
-[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
+#[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
 [[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "disk")
 
 for keyword in "${keywords_to_delete[@]}"; do
@@ -158,7 +158,7 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     provided_config_lines+=(
         "# CONFIG_PACKAGE_hostapd-common is not set"
         "# CONFIG_PACKAGE_wpad-openssl is not set"
-        "# CONFIG_PACKAGE_wpad-full-openssl is not set"   # ← 加这个！
+        "# CONFIG_PACKAGE_wpad-full-openssl is not set"
         "# CONFIG_PACKAGE_wpad-basic-openssl is not set"
     )
 
