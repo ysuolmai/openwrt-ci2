@@ -369,10 +369,3 @@ patch_openwrt_go() {
 }
 
 patch_openwrt_go || exit 1
-
-# 修复 hostapd he_mu_edca 编译错误
-HOSTAPD_SRC=$(find package/network/services/hostapd -name "hostapd.c" 2>/dev/null | head -1)
-# 更直接的方式：打 patch 到 hostapd package patch 目录
-cp "${GITHUB_WORKSPACE}/scripts/hostapd-fix-he-mu-edca.patch" \
-   package/network/services/hostapd/patches/
-
