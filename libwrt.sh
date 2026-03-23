@@ -378,3 +378,13 @@ patch_openwrt_go() {
 }
 
 patch_openwrt_go || exit 1
+
+
+# ============================================================
+# 诊断：找出谁在 select wpad/hostapd
+# ============================================================
+if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
+    echo "=== who selects wpad/hostapd ==="
+    grep -r "select.*PACKAGE_wpad\|select.*PACKAGE_hostapd" feeds/ package/ --include="Makefile" -i || echo "none found"
+fi
+
