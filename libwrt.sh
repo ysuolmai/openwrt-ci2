@@ -160,7 +160,13 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
         "# CONFIG_PACKAGE_wpad-openssl is not set"
         "# CONFIG_PACKAGE_wpad-full-openssl is not set"
         "# CONFIG_PACKAGE_wpad-basic-openssl is not set"
+        "# CONFIG_PACKAGE_wpad is not set"
+        "# CONFIG_PACKAGE_luci-app-cd8021x is not set"
+        "# CONFIG_PACKAGE_static-neighbor-reports is not set"
+        "# CONFIG_PACKAGE_hs20 is not set"
+        "# CONFIG_PACKAGE_ieee8021xclient is not set"
     )
+
 
     echo "[NOWIFI] preparing nowifi dtsi files..."
 
