@@ -107,10 +107,15 @@ jobs:
     - name: Download DL Package(下载DL软件包)
       run: |
         cd $OPENWRT_PATH
+        echo "=== BEFORE defconfig ==="
+        grep -i "wpad\|hostapd" .config || echo "none"
         make defconfig
+        echo "=== AFTER defconfig ==="
+        grep -i "wpad\|hostapd" .config || echo "none"
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+
 
     - name: Compile Firmware(开始编译固件)
       id: compile
