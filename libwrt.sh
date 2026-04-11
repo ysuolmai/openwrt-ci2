@@ -325,66 +325,11 @@ if [ -f "$RUST_FILE" ]; then
     echo "rust has been fixed!"
 fi
 
-# ============================================================
-# 更新 Go 工具链到最新版本
-# ============================================================
-patch_openwrt_go() {
-    local GO_MAKEFILE
-    GO_MAKEFILE=$(find feeds -name "Makefile" | grep "lang/golang/golang/Makefile" | head -n 1)
-
-    if [ -z "$GO_MAKEFILE" ]; then
-        echo "❌ Error: Could not find OpenWrt Go Makefile!"
-        return 1
-    fi
-    echo "Found go makefile: $GO_MAKEFILE"
-
-    local LATEST_VER
-    LATEST_VER="$(curl -s "https://go.dev/VERSION?m=text" | head -n 1 | tr -d '[:space:]' | sed 's/^go//')"
-
-    if [ -z "$LATEST_VER" ]; then
-        echo "❌ Error: Failed to fetch latest Go version."
-        return 1
-    fi
-
-    local CUR_VER
-    CUR_VER=$(grep "^PKG_VERSION:=" "$GO_MAKEFILE" | cut -d= -f2)
-    echo "Current: $CUR_VER  →  Latest: $LATEST_VER"
-
-    if [ "$CUR_VER" == "$LATEST_VER" ]; then
-        echo "✅ Go version already up to date."
-        return 0
-    fi
-
-    # 直接从官方获取 sha256，无需下载整个源码包
-    echo "Fetching SHA256..."
-    local NEW_HASH
-    NEW_HASH=$(curl -sL "https://dl.google.com/go/go${LATEST_VER}.src.tar.gz.sha256")
-
-    if [ -z "$NEW_HASH" ] || [ ${#NEW_HASH} -ne 64 ]; then
-        echo "❌ Error: Failed to get SHA256 hash, falling back to download method..."
-        NEW_HASH=$(curl -sL "https://go.dev/dl/go${LATEST_VER}.src.tar.gz" | sha256sum | awk '{print $1}')
-        if [ -z "$NEW_HASH" ] || [ ${#NEW_HASH} -ne 64 ]; then
-            echo "❌ Error: All hash methods failed."
-            return 1
-        fi
-    fi
-
-    echo "New Hash: $NEW_HASH"
-    sed -i "s/^PKG_VERSION:=.*/PKG_VERSION:=$LATEST_VER/" "$GO_MAKEFILE"
-    sed -i "s/^PKG_HASH:=.*/PKG_HASH:=$NEW_HASH/" "$GO_MAKEFILE"
-
-    grep -E "^PKG_VERSION|^PKG_HASH" "$GO_MAKEFILE"
-    echo "✅ Go toolchain patched to $LATEST_VER successfully!"
-}
-
-patch_openwrt_go || exit 1
-
-
-# ============================================================
-# 诊断：找出谁在 select wpad/hostapd
-# ============================================================
-if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
-    echo "=== who selects wpad/hostapd ==="
-    grep -r "select.*PACKAGE_wpad\|select.*PACKAGE_hostapd" feeds/ package/ --include="Makefile" -i || echo "none found"
-fi
-
+  # 升级 golang 到支持 go.mod >= 1.26 的版本
+  WRT_DIR=$(pwd)  # diy.sh 在 wrt/ 目录下执行                                                                           
+  rm -rf feeds/packages/lang/golang                                                                                     
+  git clone https://github.com/openwrt/packages --depth=1 --filter=blob:none --sparse /tmp/openwrt-packages             
+  cd /tmp/openwrt-packages && git sparse-checkout set lang/golang                                                       
+  cp -r /tmp/openwrt-packages/lang/golang "$WRT_DIR/feeds/packages/lang/golang"                                         
+  cd "$WRT_DIR"                                                                                                         
+  ./scripts/feeds install golang
