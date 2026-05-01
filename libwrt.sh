@@ -205,13 +205,6 @@ if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
     grep -r "wpad\|hostapd" feeds/ --include="Makefile" -l 2>/dev/null | head -20
 
     echo "qualcommax set up nowifi successfully!"
-
-    # 只有 NOWIFI 且非 EMMC 时删除 Makefile 中的 USB 相关 package
-    if [[ "$FIRMWARE_TAG" != *"EMMC"* ]]; then
-        sed -i 's/\s*kmod-[^ ]*usb[^ ]*\s*\\\?//g' ./target/linux/qualcommax/Makefile
-        echo "已删除 Makefile 中的 USB 相关 package"
-    fi
-
 else
     provided_config_lines+=(
         "CONFIG_PACKAGE_kmod-usb-net=y"
