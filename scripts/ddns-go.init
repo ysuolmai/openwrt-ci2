@@ -1,0 +1,29 @@
+#!/bin/sh /etc/rc.common
+USE_PROCD=1
+START=21
+STOP=89
+
+NAME="ddns-go"
+PROG="/usr/bin/ddns-go"
+CONF="/root/.ddns_go_config.yaml"
+PORT="9876"
+pid_file="/var/run/${NAME}.pid"
+
+start_service() {
+    config_load 'ddns-go'
+    config_get_bool enabled basic enabled 1
+    [ "$enabled" -eq 1 ] || {
+        echo "${NAME} disabled via LuCI"
+        return 0
+    }
+
+    echo "Starting ${NAME}"
+    procd_open_instance
+    procd_set_param command $PROG -l :$PORT -f 300 -cacheTimes 5 -c $CONF
+    procd_set_param respawn
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_set_param pidfile ${pid_file}
+    procd_close_instance
+    echo "${NAME} has been started"
+}
