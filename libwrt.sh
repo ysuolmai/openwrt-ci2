@@ -114,8 +114,8 @@ keywords_to_delete=(
     "smartdns" "kucat" "bootstrap" "luci-app-partexp" "luci-app-upnp" "nikki"
 )
 
-[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
-[[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "disk")
+#[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
+#[[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "disk")
 
 for keyword in "${keywords_to_delete[@]}"; do
     sed -i "/$keyword/d" ./.config
@@ -169,17 +169,7 @@ provided_config_lines=(
 DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
-    provided_config_lines+=(
-        "# CONFIG_PACKAGE_hostapd-common is not set"
-        "# CONFIG_PACKAGE_wpad-openssl is not set"
-        "# CONFIG_PACKAGE_wpad-full-openssl is not set"
-        "# CONFIG_PACKAGE_wpad-basic-openssl is not set"
-        "# CONFIG_PACKAGE_wpad is not set"
-        "# CONFIG_PACKAGE_luci-app-cd8021x is not set"
-        "# CONFIG_PACKAGE_static-neighbor-reports is not set"
-        "# CONFIG_PACKAGE_hs20 is not set"
-        "# CONFIG_PACKAGE_ieee8021xclient is not set"
-    )
+    
 
     echo "[NOWIFI] preparing nowifi dtsi files..."
 
