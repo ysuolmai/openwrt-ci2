@@ -401,3 +401,36 @@ cd /tmp/openwrt-packages && git sparse-checkout set lang/golang
 cp -r /tmp/openwrt-packages/lang/golang "$WRT_DIR/feeds/packages/lang/golang"
 cd "$WRT_DIR"
 ./scripts/feeds install golang
+
+
+
+
+# ============================================================
+# 修复 vlmcsd AS 变量污染导致编译失败
+# ============================================================
+VLMCSD_MK=$(find package/ -path "*/vlmcsd/Makefile" | head -n 1)
+if [ -f "$VLMCSD_MK" ]; then
+    # 如果没有自定义 Build/Compile，则追加一个覆盖 AS 的版本
+    if ! grep -q "define Build/Compile" "$VLMCSD_MK"; then
+        cat >> "$VLMCSD_MK" << 'EOF'
+
+define Build/Compile
+	$(MAKE) -C $(PKG_BUILD_DIR) \
+		CC="$(TARGET_CC)" \
+		CXX="$(TARGET_CXX)" \
+		AR="$(TARGET_AR)" \
+		RANLIB="$(TARGET_RANLIB)" \
+		STRIP="$(STRIP)" \
+		AS="$(TARGET_CROSS)as" \
+		CFLAGS="$(TARGET_CFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS)" \
+		CROSS="$(TARGET_CROSS)" \
+		ARCH="$(ARCH)"
+endef
+EOF
+        echo "vlmcsd: Build/Compile override injected."
+    else
+        echo "vlmcsd: Build/Compile already exists, skipping."
+    fi
+fi
+
