@@ -408,8 +408,14 @@ cd "$WRT_DIR"
 # ============================================================
 # 修复 vlmcsd AS 变量污染导致编译失败
 # ============================================================
+# ============================================================
+# 修复 vlmcsd AS 变量污染导致编译失败
+# ============================================================
 VLMCSD_MK=$(find package/ -path "*/vlmcsd/Makefile" | head -n 1)
 if [ -f "$VLMCSD_MK" ]; then
+    # 禁用并行编译，避免多文件合并编译报错
+    sed -i 's/PKG_BUILD_PARALLEL:=1/PKG_BUILD_PARALLEL:=0/' "$VLMCSD_MK"
+
     # 如果没有自定义 Build/Compile，则追加一个覆盖 AS 的版本
     if ! grep -q "define Build/Compile" "$VLMCSD_MK"; then
         cat >> "$VLMCSD_MK" << 'EOF'
