@@ -404,39 +404,38 @@ cd "$WRT_DIR"
 
 
 
-
-# ============================================================
-# 修复 vlmcsd AS 变量污染导致编译失败
-# ============================================================
-# ============================================================
-# 修复 vlmcsd AS 变量污染导致编译失败
-# ============================================================
+#修复vlmcsd编译
 VLMCSD_MK=$(find package/ -path "*/vlmcsd/Makefile" | head -n 1)
+
 if [ -f "$VLMCSD_MK" ]; then
-    # 禁用并行编译，避免多文件合并编译报错
-    sed -i 's/PKG_BUILD_PARALLEL:=1/PKG_BUILD_PARALLEL:=0/' "$VLMCSD_MK"
+    echo ">>> Patching vlmcsd: $VLMCSD_MK"
 
-    # 如果没有自定义 Build/Compile，则追加一个覆盖 AS 的版本
-    if ! grep -q "define Build/Compile" "$VLMCSD_MK"; then
-        cat >> "$VLMCSD_MK" << 'EOF'
+    # 删除已有的 Build/Compile 块（如果有）
+    awk '/^define Build\/Compile/{found=1} found && /^endef/{found=0; next} !found' \
+        "$VLMCSD_MK" > "${VLMCSD_MK}.tmp"
 
-define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) \
-		CC="$(TARGET_CC)" \
-		CXX="$(TARGET_CXX)" \
-		AR="$(TARGET_AR)" \
-		RANLIB="$(TARGET_RANLIB)" \
-		STRIP="$(STRIP)" \
-		AS="$(TARGET_CROSS)as" \
-		CFLAGS="$(TARGET_CFLAGS)" \
-		LDFLAGS="$(TARGET_LDFLAGS)" \
-		CROSS="$(TARGET_CROSS)" \
-		ARCH="$(ARCH)"
-endef
-EOF
-        echo "vlmcsd: Build/Compile override injected."
-    else
-        echo "vlmcsd: Build/Compile already exists, skipping."
-    fi
+    # 在 BuildPackage 调用前插入新的 Build/Compile
+    awk '/^\$\(eval \$\(call BuildPackage/{
+        print "define Build/Compile"
+        print "\t$(MAKE) -C $(PKG_BUILD_DIR) \\"
+        print "\t\tCC=\"$(TARGET_CC)\" \\"
+        print "\t\tCXX=\"$(TARGET_CXX)\" \\"
+        print "\t\tAR=\"$(TARGET_AR)\" \\"
+        print "\t\tRANLIB=\"$(TARGET_RANLIB)\" \\"
+        print "\t\tSTRIP=\"$(STRIP)\" \\"
+        print "\t\tAS=\"$(TARGET_CROSS)as\" \\"
+        print "\t\tLD=\"$(TARGET_LD)\" \\"
+        print "\t\tCFLAGS=\"$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)\" \\"
+        print "\t\tLDFLAGS=\"$(TARGET_LDFLAGS)\" \\"
+        print "\t\tCROSS=\"$(TARGET_CROSS)\" \\"
+        print "\t\tARCH=\"$(ARCH)\" \\"
+        print "\t\t-e"
+        print "endef"
+        print ""
+    } { print }' "${VLMCSD_MK}.tmp" > "$VLMCSD_MK"
+
+    rm -f "${VLMCSD_MK}.tmp"
+    echo ">>> Done"
+else
+    echo ">>> vlmcsd Makefile not found, skipping"
 fi
-
