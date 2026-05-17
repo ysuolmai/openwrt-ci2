@@ -417,7 +417,7 @@ if [ -f "$VLMCSD_MK" ]; then
     # 在 BuildPackage 调用前插入新的 Build/Compile
     awk '/^\$\(eval \$\(call BuildPackage/{
         print "define Build/Compile"
-        print "\t$(MAKE) -C $(PKG_BUILD_DIR) \\"
+        print "\t$(MAKE) -j1 -C $(PKG_BUILD_DIR) \\"
         print "\t\tCC=\"$(TARGET_CC)\" \\"
         print "\t\tCXX=\"$(TARGET_CXX)\" \\"
         print "\t\tAR=\"$(TARGET_AR)\" \\"
