@@ -405,37 +405,48 @@ cd "$WRT_DIR"
 
 
 #修复vlmcsd编译
+#根因：CONFIG_CCACHE=y 时 TARGET_CC 被 OpenWrt 替换为 ccache_cc 包装器，
+#与 vlmcsd-svn1113 内部 src/GNUmakefile:513 的规则冲突，
+#导致多个 .c 文件被传给同一个 -c -o 命令而报错。
+#解决：用 TARGET_CC_NOCACHE（真实编译器路径）绕过 ccache，并 -j1 串行编译做双保险。
 VLMCSD_MK=$(find package/ -path "*/vlmcsd/Makefile" | head -n 1)
 
 if [ -f "$VLMCSD_MK" ]; then
     echo ">>> Patching vlmcsd: $VLMCSD_MK"
+    python3 - "$VLMCSD_MK" << 'PYEOF'
+import re, sys
 
-    # 删除已有的 Build/Compile 块（如果有）
-    awk '/^define Build\/Compile/{found=1} found && /^endef/{found=0; next} !found' \
-        "$VLMCSD_MK" > "${VLMCSD_MK}.tmp"
+mk_path = sys.argv[1]
+content = open(mk_path).read()
 
-    # 在 BuildPackage 调用前插入新的 Build/Compile
-    awk '/^\$\(eval \$\(call BuildPackage/{
-        print "define Build/Compile"
-        print "\t$(MAKE) -j1 -C $(PKG_BUILD_DIR) \\"
-        print "\t\tCC=\"$(TARGET_CC)\" \\"
-        print "\t\tCXX=\"$(TARGET_CXX)\" \\"
-        print "\t\tAR=\"$(TARGET_AR)\" \\"
-        print "\t\tRANLIB=\"$(TARGET_RANLIB)\" \\"
-        print "\t\tSTRIP=\"$(STRIP)\" \\"
-        print "\t\tAS=\"$(TARGET_CROSS)as\" \\"
-        print "\t\tLD=\"$(TARGET_LD)\" \\"
-        print "\t\tCFLAGS=\"$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)\" \\"
-        print "\t\tLDFLAGS=\"$(TARGET_LDFLAGS)\" \\"
-        print "\t\tCROSS=\"$(TARGET_CROSS)\" \\"
-        print "\t\tARCH=\"$(ARCH)\" \\"
-        print "\t\t-e"
-        print "endef"
-        print ""
-    } { print }' "${VLMCSD_MK}.tmp" > "$VLMCSD_MK"
+# 删除所有已有的 Build/Compile 定义块（DOTALL 让 . 匹配换行）
+content = re.sub(r'\ndefine Build/Compile\n.*?endef\n', '\n', content, flags=re.DOTALL)
 
-    rm -f "${VLMCSD_MK}.tmp"
-    echo ">>> Done"
+# 注意 CC/CXX 使用 _NOCACHE 版本，绕过 ccache_cc 包装器
+new_compile = '''
+define Build/Compile
+\t$(MAKE) -j1 -C $(PKG_BUILD_DIR) \\
+\t\tCC="$(TARGET_CC_NOCACHE)" \\
+\t\tCXX="$(TARGET_CXX_NOCACHE)" \\
+\t\tAR="$(TARGET_AR)" \\
+\t\tRANLIB="$(TARGET_RANLIB)" \\
+\t\tSTRIP="$(STRIP)" \\
+\t\tAS="$(TARGET_CROSS)as" \\
+\t\tLD="$(TARGET_LD)" \\
+\t\tCFLAGS="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)" \\
+\t\tLDFLAGS="$(TARGET_LDFLAGS)" \\
+\t\tCROSS="$(TARGET_CROSS)" \\
+\t\tARCH="$(ARCH)" \\
+\t\t-e
+endef
+'''
+
+# 用 \s+ 匹配任意空白，对包内 Makefile 格式差异更宽容
+content = re.sub(r'(\$\(eval\s+\$\(call\s+BuildPackage)', new_compile + r'\1', content, count=1)
+
+open(mk_path, 'w').write(content)
+print(f">>> Patched OK: {mk_path}")
+PYEOF
 else
     echo ">>> vlmcsd Makefile not found, skipping"
 fi
