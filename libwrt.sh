@@ -296,6 +296,16 @@ find ./ -name "dark.less" -exec sed -i 's/#5e72e4/#31A1A1/g; s/#483d8b/#31A1A1/g
 
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_ttyd-nopass.sh" "package/base-files/files/etc/uci-defaults/99_ttyd-nopass"
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
+
+# 设置默认主题为 shadcn（文件名排在 argon 之后，确保覆盖）
+mkdir -p package/base-files/files/etc/uci-defaults
+cat > "package/base-files/files/etc/uci-defaults/99_set_theme_shadcn" << 'EOF'
+#!/bin/sh
+uci set luci.main.mediaurlbase=/luci-static/shadcn
+uci commit luci
+exit 0
+EOF
+chmod +x "package/base-files/files/etc/uci-defaults/99_set_theme_shadcn"
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99-distfeeds.conf" "package/emortal/default-settings/files/99-distfeeds.conf"
 
 sed -i "/define Package\/default-settings\/install/a\\
