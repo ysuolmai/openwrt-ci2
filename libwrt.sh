@@ -359,9 +359,28 @@ fi
 ./scripts/feeds install luci-lib-docker
 
 # 修复 dockerd 和 docker CLI 版本
-DOCKER_VER="29.2.1"
-DOCKERD_COMMIT="4042ac6"
-DOCKER_CLI_COMMIT="33a5c92"
+echo "Fetching latest Docker version..."
+DOCKER_VER=$(curl -sf https://api.github.com/repos/moby/moby/releases/latest | \
+    python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'].lstrip('v'))")
+
+if [ -z "$DOCKER_VER" ]; then
+    echo "警告: 无法获取 Docker 最新版本，回退到 29.5.2"
+    DOCKER_VER="29.5.2"
+    DOCKERD_COMMIT="568f755"
+    DOCKER_CLI_COMMIT="79eb04c"
+else
+    echo "Latest Docker version: $DOCKER_VER"
+    DOCKERD_COMMIT=$(curl -sf "https://api.github.com/repos/moby/moby/tags?per_page=30" | \
+        python3 -c "import sys,json; tags=json.load(sys.stdin); v='v${DOCKER_VER}'; print(next((t['commit']['sha'][:7] for t in tags if t['name']==v), ''))")
+    DOCKER_CLI_COMMIT=$(curl -sf "https://api.github.com/repos/docker/cli/tags?per_page=30" | \
+        python3 -c "import sys,json; tags=json.load(sys.stdin); v='v${DOCKER_VER}'; print(next((t['commit']['sha'][:7] for t in tags if t['name']==v), ''))")
+    if [ -z "$DOCKERD_COMMIT" ] || [ -z "$DOCKER_CLI_COMMIT" ]; then
+        echo "警告: 无法获取 commit hash，回退到已知值"
+        DOCKERD_COMMIT="568f755"
+        DOCKER_CLI_COMMIT="79eb04c"
+    fi
+fi
+echo "Docker: $DOCKER_VER | dockerd: $DOCKERD_COMMIT | cli: $DOCKER_CLI_COMMIT"
 
 dockerd_makefile=$(find package/ feeds/ -name Makefile | xargs grep -l "PKG_NAME:=dockerd" | head -n 1)
 docker_makefile=$(find package/ feeds/ -name Makefile | xargs grep -l "PKG_NAME:=docker" | head -n 1)
