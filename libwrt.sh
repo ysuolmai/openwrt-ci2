@@ -4,7 +4,495 @@
 # sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
 
 # ============================================================
+# 安装和更新软件包#!/bin/bash
+
+# 修改默认IP
+# sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
+
+# ============================================================
 # 安装和更新软件包
+# ============================================================
+UPDATE_PACKAGE() {
+	local PKG_NAME=$1
+	local PKG_REPO=$2
+	local PKG_BRANCH=$3
+	local PKG_SPECIAL=$4
+
+	# 清理旧的包（精确匹配，避免误删）
+	read -ra PKG_NAMES <<< "$PKG_NAME"
+	for NAME in "${PKG_NAMES[@]}"; do
+		find feeds/luci/ feeds/packages/ package/ -maxdepth 3 -type d \( -name "$NAME" -o -name "luci-*-$NAME" \) -exec rm -rf {} + 2>/dev/null || true
+	done
+
+	# 克隆仓库
+	if [[ $PKG_REPO == http* ]]; then
+		local REPO_NAME=$(basename "$PKG_REPO" .git)
+	else
+		local REPO_NAME=$(echo "$PKG_REPO" | cut -d '/' -f 2)
+		PKG_REPO="https://github.com/$PKG_REPO.git"
+	fi
+
+	# 检查是否克隆成功
+	if ! git clone --depth=1 --single-branch --branch "$PKG_BRANCH" "$PKG_REPO" "package/$REPO_NAME"; then
+		echo "错误: 克隆仓库失败 $PKG_REPO"
+		return 1
+	fi
+
+	# 根据 PKG_SPECIAL 处理包
+	case "$PKG_SPECIAL" in
+		"pkg")
+			for NAME in "${PKG_NAMES[@]}"; do
+				find "./package/$REPO_NAME" -maxdepth 3 -type d \( -name "$NAME" -o -name "luci-*-$NAME" \) -print0 | \
+					xargs -0 -I {} cp -rf {} ./package/ 2>/dev/null
+			done
+			rm -rf "./package/$REPO_NAME/"
+			;;
+		"name")
+			rm -rf "./package/$PKG_NAME"
+			mv -f "./package/$REPO_NAME" "./package/$PKG_NAME"
+			;;
+	esac
+}
+
+
+UPDATE_PACKAGE "luci-app-poweroff" "esirplayground/luci-app-poweroff" "main"
+UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
+UPDATE_PACKAGE "openwrt-gecoosac" "ysuolmai/openwrt-gecoosac" "main"
+#UPDATE_PACKAGE "luci-app-homeproxy" "immortalwrt/homeproxy" "master"
+UPDATE_PACKAGE "luci-app-ddns-go" "sirpdboy/luci-app-ddns-go" "main"
+UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
+
+#small-package
+UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
+        naiveproxy v2ray-core v2ray-geodata v2ray-geoview v2ray-plugin \
+        tuic-client chinadns-ng ipt2socks tcping trojan-plus simple-obfs shadowsocksr-libev \
+        luci-app-passwall smartdns luci-app-smartdns v2dat mosdns luci-app-mosdns \
+        taskd luci-lib-xterm luci-lib-taskd luci-app-ssr-plus luci-app-passwall2 \
+        luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
+        luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
+        luci-app-nikki luci-app-vlmcsd vlmcsd frp luci-app-ddns-go ddns-go docker dockerd" "kenzok8/jell" "main" "pkg"
+
+#speedtest
+UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
+UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
+
+UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "apk"
+UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
+
+UPDATE_PACKAGE "openwrt-podman" "https://github.com/breeze303/openwrt-podman" "main"
+UPDATE_PACKAGE "luci-app-quickfile" "https://github.com/sbwml/luci-app-quickfile" "main"
+sed -i 's|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-$(ARCH_PACKAGES) $(1)/usr/bin/quickfile|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-aarch64_generic $(1)/usr/bin/quickfile|' package/luci-app-quickfile/quickfile/Makefile
+
+# bandix
+UPDATE_PACKAGE "openwrt-bandix" "timsaya/openwrt-bandix" "main"
+UPDATE_PACKAGE "luci-app-bandix" "timsaya/luci-app-bandix" "main"
+
+UPDATE_PACKAGE "luci-theme-shadcn" "ysuolmai/luci-theme-shadcn" "main"
+
+
+# ============================================================
+# luci-app-diskman
+# ============================================================
+find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname luci-app-diskman -exec rm -rf {} + 2>/dev/null || true
+find feeds/luci/ feeds/packages/ -maxdepth 3 -type d -iname parted -exec rm -rf {} + 2>/dev/null || true
+mkdir -p package/luci-app-diskman && \
+wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/applications/luci-app-diskman/Makefile -O package/luci-app-diskman/Makefile
+sed -i 's/fs-ntfs /fs-ntfs3 /g' package/luci-app-diskman/Makefile
+sed -i '/ntfs-3g-utils /d' package/luci-app-diskman/Makefile
+mkdir -p package/parted && \
+wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -O package/parted/Makefile
+
+# ============================================================
+# 只保留指定的 qualcommax_ipq60xx 设备
+# ============================================================
+if [[ $FIRMWARE_TAG == *"EMMC"* ]]; then
+    keep_pattern="\(redmi_ax5-jdcloud\|jdcloud_re-ss-01\|jdcloud_re-cs-07\)=y$"
+else
+    keep_pattern="\(redmi_ax5\|qihoo_360v6\|redmi_ax5-jdcloud\|zn_m2\|jdcloud_re-ss-01\|jdcloud_re-cs-07\)=y$"
+fi
+
+sed -i "/^CONFIG_TARGET_DEVICE_qualcommax_ipq60xx_DEVICE_/{
+    /$keep_pattern/!d
+}" ./.config
+
+# ============================================================
+# 删除不需要的关键词配置
+# ============================================================
+keywords_to_delete=(
+    "uugamebooster" "luci-app-wol" "luci-i18n-wol-zh-cn" "CONFIG_TARGET_INITRAMFS" "ddns" "LSUSB" "mihomo"
+    "smartdns" "kucat" "bootstrap" "luci-app-partexp" "luci-app-upnp" "nikki"
+)
+
+#[[ $FIRMWARE_TAG == *"NOWIFI"* ]] && keywords_to_delete+=("usb" "wpad" "hostapd")
+#[[ $FIRMWARE_TAG != *"EMMC"* ]] && keywords_to_delete+=("samba" "autosamba" "disk")
+
+for keyword in "${keywords_to_delete[@]}"; do
+    sed -i "/$keyword/d" ./.config
+done
+
+# ============================================================
+# 追加配置项
+# ============================================================
+provided_config_lines=(
+    "CONFIG_PACKAGE_luci-app-zerotier=y"
+    "CONFIG_PACKAGE_luci-i18n-zerotier-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-adguardhome=y"
+    "CONFIG_PACKAGE_luci-i18n-adguardhome-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-poweroff=y"
+    "CONFIG_PACKAGE_luci-i18n-poweroff-zh-cn=y"
+    "CONFIG_PACKAGE_cpufreq=y"
+    "CONFIG_PACKAGE_luci-app-cpufreq=y"
+    "CONFIG_PACKAGE_luci-i18n-cpufreq-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-ttyd=y"
+    "CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y"
+    "CONFIG_PACKAGE_ttyd=y"
+    "CONFIG_PACKAGE_luci-app-homeproxy=y"
+    "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-ddns-go=y"
+    "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
+    "CONFIG_PACKAGE_luci-app-argon-config=y"
+    "CONFIG_PACKAGE_nano=y"
+    "CONFIG_BUSYBOX_CONFIG_LSUSB=n"
+    "CONFIG_PACKAGE_luci-app-netspeedtest=y"
+    "CONFIG_PACKAGE_luci-app-vlmcsd=y"
+    "CONFIG_COREMARK_OPTIMIZE_O3=y"
+    "CONFIG_COREMARK_ENABLE_MULTITHREADING=y"
+    "CONFIG_COREMARK_NUMBER_OF_THREADS=6"
+    "CONFIG_PACKAGE_luci-app-filetransfer=y"
+    "CONFIG_PACKAGE_openssh-sftp-server=y"
+    "CONFIG_PACKAGE_luci-app-frpc=y"
+    "CONFIG_OPKG_USE_CURL=y"
+    "CONFIG_PACKAGE_opkg=y"
+    "CONFIG_USE_APK=n"
+    "CONFIG_PACKAGE_luci-app-tailscale=y"
+    "CONFIG_PACKAGE_luci-app-gecoosac=y"
+    "CONFIG_PACKAGE_luci-app-wireguard=y"
+    "CONFIG_PACKAGE_wireguard-tools=y"
+    "CONFIG_PACKAGE_kmod-wireguard=y"
+    "CONFIG_PACKAGE_luci-proto-wireguard=y"
+    "CONFIG_PACKAGE_luci-app-cifs-mount=y"
+    "CONFIG_PACKAGE_kmod-fs-cifs=y"
+    "CONFIG_PACKAGE_cifsmount=y"
+	"CONFIG_PACKAGE_luci-theme-shadcn=y"
+)
+
+DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
+
+if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
+    
+
+    echo "[NOWIFI] preparing nowifi dtsi files..."
+
+    for dtsi in ipq6018-nowifi.dtsi ipq8074-nowifi.dtsi; do
+        if [[ -f "${GITHUB_WORKSPACE}/scripts/$dtsi" ]]; then
+            if [[ ! -f "$DTS_PATH/$dtsi" ]]; then
+                cp "${GITHUB_WORKSPACE}/scripts/$dtsi" "$DTS_PATH/"
+                echo "[NOWIFI] copied $dtsi to $DTS_PATH"
+            else
+                echo "[NOWIFI] $dtsi already exists in $DTS_PATH"
+            fi
+        else
+            echo "[NOWIFI][ERROR] scripts/$dtsi not found!"
+            exit 1
+        fi
+    done
+
+    find "$DTS_PATH" -type f ! -iname '*nowifi*' -exec sed -i \
+      -e '/#include "ipq6018.dtsi"/a #include "ipq6018-nowifi.dtsi"' \
+      -e '/#include "ipq8074.dtsi"/a #include "ipq8074-nowifi.dtsi"' {} +
+
+    echo "=== checking what depends on wpad ==="
+    grep -r "wpad\|hostapd" feeds/ --include="Makefile" -l 2>/dev/null | head -20
+
+    echo "qualcommax set up nowifi successfully!"
+else
+    provided_config_lines+=(
+        "CONFIG_PACKAGE_kmod-usb-net=y"
+        "CONFIG_PACKAGE_kmod-usb-net-rndis=y"
+        "CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y"
+        "CONFIG_PACKAGE_usbutils=y"
+        "CONFIG_PACKAGE_kmod-usb-acm=y"
+        "CONFIG_PACKAGE_kmod-usb-ehci=y"
+        "CONFIG_PACKAGE_kmod-usb-net-huawei-cdc-ncm=y"
+        "CONFIG_PACKAGE_kmod-usb-net-rndis=y"
+        "CONFIG_PACKAGE_kmod-usb-net-asix-ax88179=y"
+        "CONFIG_PACKAGE_kmod-usb-net-rtl8152=y"
+        "CONFIG_PACKAGE_kmod-usb-net-sierrawireless=y"
+        "CONFIG_PACKAGE_kmod-usb-ohci=y"
+        "CONFIG_PACKAGE_kmod-usb-serial-qualcomm=y"
+        "CONFIG_PACKAGE_kmod-usb-storage=y"
+        "CONFIG_PACKAGE_kmod-usb2=y"
+    )
+fi
+
+# 删除有问题的补丁文件
+rm -f package/kernel/mac80211/patches/nss/ath11k/999-902-ath11k-fix-WDS-by-disabling-nwds.patch
+rm -f package/kernel/mac80211/patches/nss/subsys/999-775-wifi-mac80211-Changes-for-WDS-MLD.patch
+rm -f package/kernel/mac80211/patches/nss/subsys/999-922-mac80211-fix-null-chanctx-warning-for-NSS-dynamic-VLAN.patch
+
+[[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
+    "CONFIG_PACKAGE_luci-app-docker=m"
+    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=m"
+    "CONFIG_PACKAGE_luci-app-dockerman=m"
+    "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=m"
+    "CONFIG_PACKAGE_luci-app-openlist2=y"
+    "CONFIG_PACKAGE_luci-i18n-openlist2-zh-cn=y"
+    "CONFIG_PACKAGE_iptables-mod-extra=y"
+    "CONFIG_PACKAGE_ip6tables-nft=y"
+    "CONFIG_PACKAGE_ip6tables-mod-fullconenat=y"
+    "CONFIG_PACKAGE_iptables-mod-fullconenat=y"
+    "CONFIG_PACKAGE_libip4tc=y"
+    "CONFIG_PACKAGE_libip6tc=y"
+    "CONFIG_PACKAGE_luci-app-passwall=y"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Simple_Obfs=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_SingBox=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan_Plus=n"
+    "CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=n"
+    "CONFIG_PACKAGE_htop=y"
+    "CONFIG_PACKAGE_tcpdump=y"
+    "CONFIG_PACKAGE_openssl-util=y"
+    "CONFIG_PACKAGE_qrencode=y"
+    "CONFIG_PACKAGE_smartmontools-drivedb=y"
+    "CONFIG_PACKAGE_usbutils=y"
+    "CONFIG_PACKAGE_default-settings=y"
+    "CONFIG_PACKAGE_default-settings-chn=y"
+    "CONFIG_PACKAGE_iptables-mod-conntrack-extra=y"
+    "CONFIG_PACKAGE_kmod-br-netfilter=y"
+    "CONFIG_PACKAGE_kmod-ip6tables=y"
+    "CONFIG_PACKAGE_kmod-ipt-conntrack=y"
+    "CONFIG_PACKAGE_kmod-ipt-extra=y"
+    "CONFIG_PACKAGE_kmod-ipt-nat=y"
+    "CONFIG_PACKAGE_kmod-ipt-nat6=y"
+    "CONFIG_PACKAGE_kmod-ipt-physdev=y"
+    "CONFIG_PACKAGE_kmod-nf-ipt6=y"
+    "CONFIG_PACKAGE_kmod-nf-ipvs=y"
+    "CONFIG_PACKAGE_kmod-nf-nat6=y"
+    "CONFIG_PACKAGE_kmod-dummy=y"
+    "CONFIG_PACKAGE_kmod-veth=y"
+    "CONFIG_PACKAGE_luci-app-frps=y"
+    "CONFIG_PACKAGE_luci-app-samba4=y"
+    "CONFIG_PACKAGE_luci-app-openclash=y"
+)
+
+[[ $FIRMWARE_TAG == "IPQ"* ]] && provided_config_lines+=("CONFIG_PACKAGE_sqm-scripts-nss=y")
+
+# 写入配置
+for line in "${provided_config_lines[@]}"; do
+    echo "$line" >> .config
+done
+
+# ============================================================
+# 删除有问题的补丁
+# ============================================================
+rm -f ./target/linux/qualcommax/patches-6.12/0083-v6.11-arm64-dts-qcom-ipq6018-add-sdhci-node.patch
+
+# ============================================================
+# 修复杂项
+# ============================================================
+find ./ -name "getifaddr.c" -exec sed -i 's/return 1;/return 0;/g' {} \;
+sed -i '/\/usr\/bin\/zsh/d' package/base-files/files/etc/profile
+
+find ./ -name "cascade.css" -exec sed -i 's/#5e72e4/#31A1A1/g; s/#483d8b/#31A1A1/g' {} \;
+find ./ -name "dark.css" -exec sed -i 's/#5e72e4/#31A1A1/g; s/#483d8b/#31A1A1/g' {} \;
+find ./ -name "cascade.less" -exec sed -i 's/#5e72e4/#31A1A1/g; s/#483d8b/#31A1A1/g' {} \;
+find ./ -name "dark.less" -exec sed -i 's/#5e72e4/#31A1A1/g; s/#483d8b/#31A1A1/g' {} \;
+
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_ttyd-nopass.sh" "package/base-files/files/etc/uci-defaults/99_ttyd-nopass"
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
+
+# 设置默认主题为 shadcn（文件名排在 argon 之后，确保覆盖）
+mkdir -p package/base-files/files/etc/uci-defaults
+cat > "package/base-files/files/etc/uci-defaults/99_set_theme_shadcn" << 'EOF'
+#!/bin/sh
+uci set luci.main.mediaurlbase=/luci-static/shadcn
+uci commit luci
+exit 0
+EOF
+chmod +x "package/base-files/files/etc/uci-defaults/99_set_theme_shadcn"
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/99-distfeeds.conf" "package/emortal/default-settings/files/99-distfeeds.conf"
+
+sed -i "/define Package\/default-settings\/install/a\\
+\\t\$(INSTALL_DIR) \$(1)/etc\\n\
+\t\$(INSTALL_DATA) ./files/99-distfeeds.conf \$(1)/etc/99-distfeeds.conf\n" "package/emortal/default-settings/Makefile"
+
+sed -i "/exit 0/i\\
+[ -f \'/etc/99-distfeeds.conf\' ] && mv \'/etc/99-distfeeds.conf\' \'/etc/opkg/distfeeds.conf\'\n\
+sed -ri \'/check_signature/s@^[^#]@#&@\' /etc/opkg.conf\n" "package/emortal/default-settings/files/99-default-settings"
+
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_dropbear_setup.sh" "package/base-files/files/etc/uci-defaults/99_dropbear_setup"
+
+# ============================================================
+# 修复 luci-app-quickstart / luci-app-store PKG_VERSION 格式
+# ============================================================
+if [ -f ./package/luci-app-quickstart/Makefile ]; then
+    sed -i -E 's/PKG_VERSION:=([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)/PKG_VERSION:=\1\nPKG_RELEASE:=\2/' ./package/luci-app-quickstart/Makefile
+fi
+if [ -f ./package/luci-app-store/Makefile ]; then
+    sed -i -E 's/PKG_VERSION:=([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)/PKG_VERSION:=\1\nPKG_RELEASE:=\2/' ./package/luci-app-store/Makefile
+fi
+
+# ============================================================
+# 修复 cmake 版本兼容问题
+# ============================================================
+if ! grep -q "CMAKE_POLICY_VERSION_MINIMUM" include/cmake.mk; then
+    echo 'CMAKE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5' >> include/cmake.mk
+fi
+
+# ============================================================
+# 修复 Docker 依赖和编译
+# ============================================================
+echo "Handling Docker dependencies..."
+
+rm -rf package/feeds/luci/luci-app-dockerman
+rm -rf package/feeds/luci/luci-lib-docker
+rm -rf package/luci-app-dockerman
+rm -rf package/luci-lib-docker
+
+echo "Cloning luci-app-dockerman..."
+git clone --depth 1 https://github.com/lisaac/luci-app-dockerman.git temp_dockerman
+mv temp_dockerman/applications/luci-app-dockerman package/luci-app-dockerman
+rm -rf temp_dockerman
+
+echo "Cloning luci-lib-docker..."
+git clone --depth 1 https://github.com/lisaac/luci-lib-docker.git temp_libdocker
+if [ -d "temp_libdocker/collections/luci-lib-docker" ]; then
+    mv temp_libdocker/collections/luci-lib-docker package/luci-lib-docker
+else
+    mv temp_libdocker package/luci-lib-docker
+fi
+rm -rf temp_libdocker
+
+if [ -f "package/luci-app-dockerman/Makefile" ]; then
+    echo "Removing cgroupfs-mount dependency..."
+    sed -i 's/+cgroupfs-mount //g' package/luci-app-dockerman/Makefile
+    sed -i 's/+cgroupfs-mount//g' package/luci-app-dockerman/Makefile
+fi
+
+./scripts/feeds install ttyd
+./scripts/feeds install luci-lib-docker
+
+# 修复 dockerd 和 docker CLI 版本
+echo "Fetching latest Docker version..."
+# 保留原始 tag_name（如 docker-v29.5.2 或 v29.5.2）用于 tags API 查询
+_MOBY_TAG=$(curl -sf https://api.github.com/repos/moby/moby/releases/latest | \
+    python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+# 从 tag_name 中提取纯版本号（兼容 docker-v29.5.2 和 v29.5.2 两种格式）
+DOCKER_VER=$(echo "$_MOBY_TAG" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+
+if [ -z "$DOCKER_VER" ]; then
+    echo "警告: 无法获取 Docker 最新版本，回退到 29.5.2"
+    DOCKER_VER="29.5.2"
+    DOCKERD_COMMIT="568f755"
+    DOCKER_CLI_COMMIT="79eb04c"
+else
+    echo "Latest Docker version: $DOCKER_VER (tag: $_MOBY_TAG)"
+    # 直接用 commits API 查询指定 tag 的 commit，不依赖分页
+    DOCKERD_COMMIT=$(curl -sf "https://api.github.com/repos/moby/moby/commits?sha=${_MOBY_TAG}&per_page=1" | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['sha'][:7] if isinstance(d,list) and d else '')")
+    DOCKER_CLI_COMMIT=$(curl -sf "https://api.github.com/repos/docker/cli/commits?sha=v${DOCKER_VER}&per_page=1" | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['sha'][:7] if isinstance(d,list) and d else '')")
+    if [ -z "$DOCKERD_COMMIT" ] || [ -z "$DOCKER_CLI_COMMIT" ]; then
+        echo "警告: 无法获取 commit hash，回退到已知值"
+        DOCKERD_COMMIT="568f755"
+        DOCKER_CLI_COMMIT="79eb04c"
+    fi
+fi
+echo "Docker: $DOCKER_VER | dockerd: $DOCKERD_COMMIT | cli: $DOCKER_CLI_COMMIT"
+
+dockerd_makefile=$(find package/ feeds/ -name Makefile | xargs grep -lE "^PKG_NAME:=dockerd$" | head -n 1)
+docker_makefile=$(find package/ feeds/ -name Makefile | xargs grep -lE "^PKG_NAME:=docker$" | head -n 1)
+
+if [ -f "$dockerd_makefile" ]; then
+    echo "Processing dockerd Makefile at: $dockerd_makefile"
+    sed -i "s/^PKG_VERSION:=.*/PKG_VERSION:=$DOCKER_VER/" "$dockerd_makefile"
+    sed -i "s/PKG_GIT_SHORT_COMMIT:=.*/PKG_GIT_SHORT_COMMIT:=$DOCKERD_COMMIT/g" "$dockerd_makefile"
+    sed -i 's/^PKG_HASH:=.*/PKG_HASH:=skip/' "$dockerd_makefile"
+    sed -i '/define Build\/Prepare/,/endef/c\define Build\/Prepare\n\t$(Build\/Prepare\/Default)\nendef' "$dockerd_makefile"
+    sed -i 's/^\t$(call EnsureVendored/#\t$(call EnsureVendored/g' "$dockerd_makefile"
+fi
+
+if [ -f "$docker_makefile" ]; then
+    echo "Processing docker CLI Makefile at: $docker_makefile"
+    sed -i "s/^PKG_VERSION:=.*/PKG_VERSION:=$DOCKER_VER/" "$docker_makefile"
+    sed -i "s/PKG_GIT_SHORT_COMMIT:=.*/PKG_GIT_SHORT_COMMIT:=$DOCKER_CLI_COMMIT/g" "$docker_makefile"
+    sed -i 's/^PKG_HASH:=.*/PKG_HASH:=skip/' "$docker_makefile"
+    sed -i '/define Build\/Prepare/,/endef/c\define Build\/Prepare\n\t$(Build\/Prepare\/Default)\nendef' "$docker_makefile"
+fi
+
+echo "All Docker compilation fixes applied successfully!"
+
+# ============================================================
+# 修复 rust 编译
+# ============================================================
+RUST_FILE=$(find ./feeds/packages/ -maxdepth 3 -type f -wholename "*/rust/Makefile")
+if [ -f "$RUST_FILE" ]; then
+    sed -i 's/ci-llvm=true/ci-llvm=false/g' "$RUST_FILE"
+    patch "$RUST_FILE" "${GITHUB_WORKSPACE}/scripts/rust-makefile.patch"
+    echo "rust has been fixed!"
+fi
+
+# ============================================================
+# 升级 golang 到支持 go.mod >= 1.26 的版本
+# ============================================================
+WRT_DIR=$(pwd)
+rm -rf feeds/packages/lang/golang
+git clone https://github.com/openwrt/packages --depth=1 --filter=blob:none --sparse /tmp/openwrt-packages
+cd /tmp/openwrt-packages && git sparse-checkout set lang/golang
+cp -r /tmp/openwrt-packages/lang/golang "$WRT_DIR/feeds/packages/lang/golang"
+cd "$WRT_DIR"
+./scripts/feeds install golang
+
+
+
+#修复vlmcsd编译
+#根因：CONFIG_CCACHE=y 时 TARGET_CC 被 OpenWrt 替换为 ccache_cc 包装器，
+#与 vlmcsd-svn1113 内部 src/GNUmakefile:513 的规则冲突，
+#导致多个 .c 文件被传给同一个 -c -o 命令而报错。
+#解决：用 TARGET_CC_NOCACHE（真实编译器路径）绕过 ccache，并 -j1 串行编译做双保险。
+VLMCSD_MK=$(find package/ -path "*/vlmcsd/Makefile" | head -n 1)
+
+if [ -f "$VLMCSD_MK" ]; then
+    echo ">>> Patching vlmcsd: $VLMCSD_MK"
+    python3 - "$VLMCSD_MK" << 'PYEOF'
+import re, sys
+
+mk_path = sys.argv[1]
+content = open(mk_path).read()
+
+# 删除所有已有的 Build/Compile 定义块（DOTALL 让 . 匹配换行）
+content = re.sub(r'\ndefine Build/Compile\n.*?endef\n', '\n', content, flags=re.DOTALL)
+
+# 注意 CC/CXX 使用 _NOCACHE 版本，绕过 ccache_cc 包装器
+new_compile = '''
+define Build/Compile
+\t$(MAKE) -j1 -C $(PKG_BUILD_DIR) \\
+\t\tCC="$(TARGET_CC_NOCACHE)" \\
+\t\tCXX="$(TARGET_CXX_NOCACHE)" \\
+\t\tAR="$(TARGET_AR)" \\
+\t\tRANLIB="$(TARGET_RANLIB)" \\
+\t\tSTRIP="$(STRIP)" \\
+\t\tAS="$(TARGET_CROSS)as" \\
+\t\tLD="$(TARGET_LD)" \\
+\t\tCFLAGS="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)" \\
+\t\tLDFLAGS="$(TARGET_LDFLAGS)" \\
+\t\tCROSS="$(TARGET_CROSS)" \\
+\t\tARCH="$(ARCH)" \\
+\t\t-e
+endef
+'''
+
+# 用 \s+ 匹配任意空白，对包内 Makefile 格式差异更宽容
+content = re.sub(r'(\$\(eval\s+\$\(call\s+BuildPackage)', new_compile + r'\1', content, count=1)
+
+open(mk_path, 'w').write(content)
+print(f">>> Patched OK: {mk_path}")
+PYEOF
+else
+    echo ">>> vlmcsd Makefile not found, skipping"
+fi
 # ============================================================
 UPDATE_PACKAGE() {
 	local PKG_NAME=$1
