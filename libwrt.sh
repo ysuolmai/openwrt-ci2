@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# 修改默认IP
+# sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
+
+# ============================================================
+# 安装和更新软件包
+# ============================================================
 UPDATE_PACKAGE() {
 	local PKG_NAME=$1
 	local PKG_REPO=$2
@@ -161,13 +167,12 @@ provided_config_lines=(
     "CONFIG_PACKAGE_luci-app-cifs-mount=y"
     "CONFIG_PACKAGE_kmod-fs-cifs=y"
     "CONFIG_PACKAGE_cifsmount=y"
-	"CONFIG_PACKAGE_luci-theme-shadcn=y"
+    "CONFIG_PACKAGE_luci-theme-shadcn=y"
 )
 
 DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
 
 if [[ $FIRMWARE_TAG == *"NOWIFI"* ]]; then
-    
 
     echo "[NOWIFI] preparing nowifi dtsi files..."
 
@@ -202,7 +207,6 @@ else
         "CONFIG_PACKAGE_kmod-usb-acm=y"
         "CONFIG_PACKAGE_kmod-usb-ehci=y"
         "CONFIG_PACKAGE_kmod-usb-net-huawei-cdc-ncm=y"
-        "CONFIG_PACKAGE_kmod-usb-net-rndis=y"
         "CONFIG_PACKAGE_kmod-usb-net-asix-ax88179=y"
         "CONFIG_PACKAGE_kmod-usb-net-rtl8152=y"
         "CONFIG_PACKAGE_kmod-usb-net-sierrawireless=y"
@@ -219,6 +223,9 @@ rm -f package/kernel/mac80211/patches/nss/subsys/999-775-wifi-mac80211-Changes-f
 rm -f package/kernel/mac80211/patches/nss/subsys/999-922-mac80211-fix-null-chanctx-warning-for-NSS-dynamic-VLAN.patch
 
 [[ $FIRMWARE_TAG == *"EMMC"* ]] && provided_config_lines+=(
+    "CONFIG_PACKAGE_dockerd=y"
+    "CONFIG_PACKAGE_docker=y"
+    "CONFIG_PACKAGE_docker-compose=y"
     "CONFIG_PACKAGE_luci-app-docker=y"
     "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-dockerman=y"
@@ -364,10 +371,8 @@ fi
 
 # 修复 dockerd 和 docker CLI 版本
 echo "Fetching latest Docker version..."
-# 保留原始 tag_name（如 docker-v29.5.2 或 v29.5.2）用于 tags API 查询
 _MOBY_TAG=$(curl -sf https://api.github.com/repos/moby/moby/releases/latest | \
     python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
-# 从 tag_name 中提取纯版本号（兼容 docker-v29.5.2 和 v29.5.2 两种格式）
 DOCKER_VER=$(echo "$_MOBY_TAG" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 
 if [ -z "$DOCKER_VER" ]; then
@@ -377,12 +382,10 @@ if [ -z "$DOCKER_VER" ]; then
     DOCKER_CLI_COMMIT="79eb04c"
 else
     echo "Latest Docker version: $DOCKER_VER (tag: $_MOBY_TAG)"
-    # moby/moby 使用原始 tag（可能是 docker-v 前缀）
-    DOCKERD_COMMIT=$(curl -sf "https://api.github.com/repos/moby/moby/tags?per_page=30" | \
-        python3 -c "import sys,json; tags=json.load(sys.stdin); t='${_MOBY_TAG}'; print(next((x['commit']['sha'][:7] for x in tags if x['name']==t), ''))")
-    # docker/cli 固定使用 v-prefix 格式（如 v29.5.2）
-    DOCKER_CLI_COMMIT=$(curl -sf "https://api.github.com/repos/docker/cli/tags?per_page=30" | \
-        python3 -c "import sys,json; tags=json.load(sys.stdin); v='v${DOCKER_VER}'; print(next((x['commit']['sha'][:7] for x in tags if x['name']==v), ''))")
+    DOCKERD_COMMIT=$(curl -sf "https://api.github.com/repos/moby/moby/commits?sha=${_MOBY_TAG}&per_page=1" | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['sha'][:7] if isinstance(d,list) and d else '')")
+    DOCKER_CLI_COMMIT=$(curl -sf "https://api.github.com/repos/docker/cli/commits?sha=v${DOCKER_VER}&per_page=1" | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['sha'][:7] if isinstance(d,list) and d else '')")
     if [ -z "$DOCKERD_COMMIT" ] || [ -z "$DOCKER_CLI_COMMIT" ]; then
         echo "警告: 无法获取 commit hash，回退到已知值"
         DOCKERD_COMMIT="568f755"
@@ -434,13 +437,13 @@ cp -r /tmp/openwrt-packages/lang/golang "$WRT_DIR/feeds/packages/lang/golang"
 cd "$WRT_DIR"
 ./scripts/feeds install golang
 
-
-
-#修复vlmcsd编译
-#根因：CONFIG_CCACHE=y 时 TARGET_CC 被 OpenWrt 替换为 ccache_cc 包装器，
-#与 vlmcsd-svn1113 内部 src/GNUmakefile:513 的规则冲突，
-#导致多个 .c 文件被传给同一个 -c -o 命令而报错。
-#解决：用 TARGET_CC_NOCACHE（真实编译器路径）绕过 ccache，并 -j1 串行编译做双保险。
+# ============================================================
+# 修复 vlmcsd 编译
+# 根因：CONFIG_CCACHE=y 时 TARGET_CC 被 OpenWrt 替换为 ccache_cc 包装器，
+# 与 vlmcsd-svn1113 内部 src/GNUmakefile:513 的规则冲突，
+# 导致多个 .c 文件被传给同一个 -c -o 命令而报错。
+# 解决：用 TARGET_CC_NOCACHE（真实编译器路径）绕过 ccache，并 -j1 串行编译做双保险。
+# ============================================================
 VLMCSD_MK=$(find package/ -path "*/vlmcsd/Makefile" | head -n 1)
 
 if [ -f "$VLMCSD_MK" ]; then
