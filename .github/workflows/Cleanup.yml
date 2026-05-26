@@ -3,10 +3,10 @@ name: Repository Cleanup
 on:
   workflow_dispatch:
     inputs:
-      keep_releases:
-        description: '保留最新 Release 的数量 (Keep latest N releases)'
+      keep_per_config:
+        description: '每个 CONFIG 保留最新版本数'
         required: true
-        default: '4'
+        default: '1'
         type: string
       delete_cache:
         description: '是否删除所有缓存? (Delete all caches)'
@@ -20,55 +20,85 @@ jobs:
     permissions:
       contents: write
       actions: write
-    # 修复点：全局设置仓库上下文，这样不需要 checkout 代码也能运行
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
 
     steps:
-      - name: Delete Old Releases
+      - name: Delete Old Releases (keep latest per CONFIG)
         env:
-          KEEP: ${{ inputs.keep_releases }}
+          KEEP_N: ${{ inputs.keep_per_config }}
         run: |
-          echo "Fetching releases for $GH_REPO..."
-          
-          # 获取所有 release，按创建时间倒序排列
-          # 跳过前 KEEP 个，删除剩下的
-          gh release list --limit 1000 --json tagName --order desc | \
-          jq -r ".[$KEEP:] | .[].tagName" | \
-          while read -r tagName; do
-            if [ -n "$tagName" ]; then
-              echo "Deleting release and tag: $tagName"
-              gh release delete "$tagName" --yes --cleanup-tag
-            fi
-          done
+          python3 << 'EOF'
+          import json, re, subprocess, os, sys
+          from collections import defaultdict
 
-      - name: Delete Workflow Runs
+          keep_n = int(os.environ.get('KEEP_N', '1'))
+          repo   = os.environ.get('GH_REPO', '')
+
+          result = subprocess.run(
+              ['gh', 'release', 'list', '--repo', repo, '--limit', '300', '--json', 'tagName,createdAt'],
+              capture_output=True, text=True
+          )
+          if result.stderr:
+              print(f"[gh stderr] {result.stderr.strip()}", file=sys.stderr)
+          if result.returncode != 0:
+              print(f"gh release list 失败 (exit {result.returncode})，退出")
+              sys.exit(1)
+          if not result.stdout.strip() or result.stdout.strip() == '[]':
+              print("没有找到任何 Release，跳过清理")
+              sys.exit(0)
+
+          releases = json.loads(result.stdout)
+          print(f"找到 {len(releases)} 个 Release")
+
+          groups = defaultdict(list)
+          for r in releases:
+              tag = r['tagName']
+              # CONFIG = 去掉版本号 -\d+.\d+ (e.g. -6.12, -24.10)
+              config = re.sub(r'-\d+\.\d+', '', tag)
+              groups[config].append((r['createdAt'], tag))
+
+          to_delete = []
+          for config, items in sorted(groups.items()):
+              items.sort(key=lambda x: x[0], reverse=True)
+              kept = [t for _, t in items[:keep_n]]
+              old  = [t for _, t in items[keep_n:]]
+              print(f"\n[{config}]")
+              print(f"  保留: {kept}")
+              if old:
+                  print(f"  删除: {old}")
+              to_delete.extend(old)
+
+          print(f"\n共删除 {len(to_delete)} 个 Release\n")
+          for tag in to_delete:
+              print(f"-> 删除 {tag}")
+              subprocess.run(
+                  ['gh', 'release', 'delete', '--repo', repo, tag, '--yes', '--cleanup-tag'],
+                  check=True
+              )
+          print("Release 清理完成")
+          EOF
+
+      - name: Delete Workflow Runs (skip current & running)
         env:
           CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
-          echo "Fetching workflow runs..."
-          
-          # 过滤掉当前正在运行的 ID
-          gh run list --limit 1000 --json databaseId -q ".[].databaseId" | \
-          grep -v "$CURRENT_RUN_ID" | \
-          while read -r runId; do
-            if [ -n "$runId" ]; then
-              echo "Deleting workflow run: $runId"
-              gh run delete "$runId"
-            fi
-          done
+          echo "清理 Workflow Runs（跳过运行中及当前）..."
+          gh run list --repo "$GH_REPO" --limit 1000 --json databaseId,status \
+            | jq -r '.[] | select(.status == "completed") | .databaseId' \
+            | grep -v "$CURRENT_RUN_ID" \
+            | xargs -r -I{} gh run delete --repo "$GH_REPO" {}
+          echo "Workflow Runs 清理完成"
 
       - name: Delete Caches
         if: ${{ inputs.delete_cache == true }}
         run: |
           echo "Deleting all caches..."
-          
-          # 列出所有 cache key 并删除
           gh cache list --limit 1000 --json id -q '.[].id' | \
           while read -r cacheId; do
-             if [ -n "$cacheId" ]; then
-                echo "Deleting cache ID: $cacheId"
-                gh cache delete "$cacheId"
-             fi
+            if [ -n "$cacheId" ]; then
+              echo "Deleting cache ID: $cacheId"
+              gh cache delete "$cacheId"
+            fi
           done || echo "No caches found or error deleting caches."
