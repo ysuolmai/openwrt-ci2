@@ -52,6 +52,11 @@ UPDATE_PACKAGE() {
 UPDATE_PACKAGE "luci-app-poweroff" "esirplayground/luci-app-poweroff" "main"
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 UPDATE_PACKAGE "openwrt-gecoosac" "ysuolmai/openwrt-gecoosac" "main"
+# gecoosac 上游作者经常覆盖同名 release asset，PKG_HASH 跟不上。
+if [ -f ./package/openwrt-gecoosac/gecoosac/Makefile ]; then
+    sed -i 's/^PKG_HASH:=.*/PKG_HASH:=skip/' ./package/openwrt-gecoosac/gecoosac/Makefile
+    echo "[libwrt] openwrt-gecoosac PKG_HASH set to skip"
+fi
 #UPDATE_PACKAGE "luci-app-homeproxy" "immortalwrt/homeproxy" "master"
 UPDATE_PACKAGE "luci-app-ddns-go" "sirpdboy/luci-app-ddns-go" "main"
 UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
@@ -142,6 +147,7 @@ provided_config_lines=(
     "CONFIG_PACKAGE_ttyd=y"
     "CONFIG_PACKAGE_luci-app-homeproxy=y"
     "CONFIG_PACKAGE_luci-i18n-homeproxy-zh-cn=y"
+    "CONFIG_PACKAGE_ddns-go=y"
     "CONFIG_PACKAGE_luci-app-ddns-go=y"
     "CONFIG_PACKAGE_luci-i18n-ddns-go-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-argon-config=y"
@@ -268,7 +274,11 @@ rm -f package/kernel/mac80211/patches/nss/subsys/999-922-mac80211-fix-null-chanc
     "CONFIG_PACKAGE_luci-app-openclash=y"
 )
 
-[[ $FIRMWARE_TAG == "IPQ"* ]] && provided_config_lines+=("CONFIG_PACKAGE_sqm-scripts-nss=y")
+[[ $FIRMWARE_TAG == "IPQ"* ]] && provided_config_lines+=(
+    "CONFIG_PACKAGE_sqm-scripts-nss=y"
+    "CONFIG_PACKAGE_luci-app-sqm=y"
+    "CONFIG_PACKAGE_luci-i18n-sqm-zh-cn=y"
+)
 
 # 写入配置
 for line in "${provided_config_lines[@]}"; do
@@ -323,6 +333,23 @@ if [ -f ./package/luci-app-quickstart/Makefile ]; then
 fi
 if [ -f ./package/luci-app-store/Makefile ]; then
     sed -i -E 's/PKG_VERSION:=([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)/PKG_VERSION:=\1\nPKG_RELEASE:=\2/' ./package/luci-app-store/Makefile
+fi
+
+if [ -f ./package/v2ray-geodata/Makefile ]; then
+    sed -i 's/VER)-\$(PKG_RELEASE)/VER)-r\$(PKG_RELEASE)/g' ./package/v2ray-geodata/Makefile
+fi
+if [ -f ./package/luci-lib-taskd/Makefile ]; then
+    sed -i 's/>=1\.0\.3-1/>=1\.0\.3-r1/g' ./package/luci-lib-taskd/Makefile
+fi
+if [ -f ./package/luci-app-openclash/Makefile ]; then
+    sed -i '/^PKG_VERSION:=/a PKG_RELEASE:=1' ./package/luci-app-openclash/Makefile
+fi
+
+if [ -d ./package/ddns-go/file ]; then
+    cp "${GITHUB_WORKSPACE}/scripts/ddns-go.init" ./package/ddns-go/file/ddns-go.init
+    cp "${GITHUB_WORKSPACE}/scripts/ddns-go.uci-default" ./package/ddns-go/file/luci-ddns-go.uci-default
+    chmod +x ./package/ddns-go/file/ddns-go.init ./package/ddns-go/file/luci-ddns-go.uci-default
+    echo "ddns-go init/defaults have been replaced successfully."
 fi
 
 # ============================================================

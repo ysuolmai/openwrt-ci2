@@ -1,0 +1,28 @@
+#!/bin/sh
+
+uci -q get ddns-go.config >/dev/null || {
+    uci -q batch <<'UCI_EOF'
+set ddns-go.config=basic
+set ddns-go.config.enabled='1'
+set ddns-go.config.port='9876'
+set ddns-go.config.time='300'
+set ddns-go.config.ctimes='5'
+set ddns-go.config.skipverify='0'
+set ddns-go.config.dns=''
+set ddns-go.config.noweb='0'
+set ddns-go.config.logger='1'
+commit ddns-go
+UCI_EOF
+}
+
+mkdir -p /etc/ddns-go
+[ -f /etc/ddns-go/ddns-go-config.yaml ] || touch /etc/ddns-go/ddns-go-config.yaml
+chmod 600 /etc/ddns-go/ddns-go-config.yaml 2>/dev/null
+
+[ -s /etc/ddns-go/localtime ] && mv -f /etc/ddns-go/localtime /etc/localtime
+
+/etc/init.d/ddns-go enable
+/etc/init.d/ddns-go start
+
+rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* /tmp/luci-indexcache.*
+exit 0
