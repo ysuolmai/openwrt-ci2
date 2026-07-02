@@ -71,6 +71,29 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
         luci-app-nikki luci-app-vlmcsd vlmcsd frp luci-app-ddns-go ddns-go docker dockerd" "kenzok8/jell" "main" "pkg"
 
+if [ -f ./package/frp/Makefile ]; then
+    if ! grep -q 'files/$(2).init' ./package/frp/Makefile; then
+        sed -i '/$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)\/$(2) $(1)\/usr\/bin\//a \
+\	$(INSTALL_DIR) $(1)/etc/init.d/\
+\	$(INSTALL_BIN) ./files/$(2).init $(1)/etc/init.d/$(2)\
+\	$(INSTALL_DIR) $(1)/etc/config/\
+\	$(INSTALL_CONF) ./files/$(2).config $(1)/etc/config/$(2)' ./package/frp/Makefile
+    fi
+
+    for init_file in ./package/frp/files/frpc.init ./package/frp/files/frps.init; do
+        if [ -f "$init_file" ] && ! grep -q 'mkdir -p /var/etc' "$init_file"; then
+            sed -i '/local conf_file="\/var\/etc\/$NAME.ini"/a \	mkdir -p /var/etc' "$init_file"
+        fi
+    done
+
+    for config_file in ./package/frp/files/frpc.config ./package/frp/files/frps.config; do
+        [ -f "$config_file" ] || continue
+        sed -i 's/option user frpc/option user root/g; s/option group frpc/option group root/g; s/option user frps/option user root/g; s/option group frps/option group root/g' "$config_file"
+    done
+
+    echo "[libwrt] frp init scripts and UCI defaults will be installed into frpc/frps packages"
+fi
+
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
 UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
