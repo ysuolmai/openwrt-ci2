@@ -57,7 +57,7 @@ if [ -f ./package/openwrt-gecoosac/gecoosac/Makefile ]; then
     sed -i 's/^PKG_HASH:=.*/PKG_HASH:=skip/' ./package/openwrt-gecoosac/gecoosac/Makefile
     echo "[libwrt] openwrt-gecoosac PKG_HASH set to skip"
 fi
-#UPDATE_PACKAGE "luci-app-homeproxy" "immortalwrt/homeproxy" "master"
+UPDATE_PACKAGE "luci-app-homeproxy" "ysuolmai/homeproxy" "main"
 UPDATE_PACKAGE "luci-app-ddns-go" "sirpdboy/luci-app-ddns-go" "main"
 UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
 
