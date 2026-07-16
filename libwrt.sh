@@ -58,7 +58,7 @@ if [ -f ./package/openwrt-gecoosac/gecoosac/Makefile ]; then
     echo "[libwrt] openwrt-gecoosac PKG_HASH set to skip"
 fi
 UPDATE_PACKAGE "luci-app-homeproxy" "ysuolmai/homeproxy" "main"
-UPDATE_PACKAGE "luci-app-ddns-go" "sirpdboy/luci-app-ddns-go" "main"
+UPDATE_PACKAGE "ddns-go luci-app-ddns-go" "ysuolmai/luci-app-ddns-go" "main" "pkg"
 UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
 
 #small-package
@@ -69,7 +69,7 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         taskd luci-lib-xterm luci-lib-taskd luci-app-ssr-plus luci-app-passwall2 \
         luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
         luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
-        luci-app-nikki luci-app-vlmcsd vlmcsd frp luci-app-ddns-go ddns-go docker dockerd" "kenzok8/jell" "main" "pkg"
+        luci-app-nikki luci-app-vlmcsd vlmcsd frp docker dockerd" "kenzok8/jell" "main" "pkg"
 
 if [ -f ./package/frp/Makefile ]; then
     if ! grep -q 'files/$(2).init' ./package/frp/Makefile; then
@@ -366,13 +366,6 @@ if [ -f ./package/luci-lib-taskd/Makefile ]; then
 fi
 if [ -f ./package/luci-app-openclash/Makefile ]; then
     sed -i '/^PKG_VERSION:=/a PKG_RELEASE:=1' ./package/luci-app-openclash/Makefile
-fi
-
-if [ -d ./package/ddns-go/file ]; then
-    cp "${GITHUB_WORKSPACE}/scripts/ddns-go.init" ./package/ddns-go/file/ddns-go.init
-    cp "${GITHUB_WORKSPACE}/scripts/ddns-go.uci-default" ./package/ddns-go/file/luci-ddns-go.uci-default
-    chmod +x ./package/ddns-go/file/ddns-go.init ./package/ddns-go/file/luci-ddns-go.uci-default
-    echo "ddns-go init/defaults have been replaced successfully."
 fi
 
 # ============================================================
