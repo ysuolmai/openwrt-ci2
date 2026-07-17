@@ -19,6 +19,19 @@ rm -rf feeds/luci/applications/luci-app-mosdns
 rm -rf feeds/luci/applications/luci-app-netdata
 rm -rf feeds/luci/applications/luci-app-serverchan
 
+# Use the self-maintained package collection for FRP, DDNS-Go, AdGuardHome,
+# Shadcn and HomeProxy, removing feed copies before cloning it.
+find feeds/luci feeds/packages package -maxdepth 5 \
+  \( -type d -o -type l \) \
+  \( -name frp -o -name luci-app-frpc -o -name luci-app-frps \
+     -o -name ddns-go -o -name luci-app-ddns-go \
+     -o -name luci-app-adguardhome -o -name luci-theme-shadcn \
+     -o -name luci-app-homeproxy \) \
+  -prune -exec rm -rf {} + 2>/dev/null
+rm -rf package/openwrt-packages
+git clone --depth=1 --single-branch --branch main \
+  https://github.com/ysuolmai/openwrt-packages.git package/openwrt-packages
+
 # Git稀疏克隆，只克隆指定目录到本地
 function git_sparse_clone() {
   branch="$1" repourl="$2" && shift 2
@@ -30,7 +43,6 @@ function git_sparse_clone() {
 }
 
 # 添加额外插件
-git clone --depth=1 https://github.com/kongfl888/luci-app-adguardhome package/luci-app-adguardhome
 git clone --depth=1 -b openwrt-18.06 https://github.com/tty228/luci-app-wechatpush package/luci-app-serverchan
 git clone --depth=1 https://github.com/ilxp/luci-app-ikoolproxy package/luci-app-ikoolproxy
 git clone --depth=1 https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff

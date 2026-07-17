@@ -57,8 +57,6 @@ if [ -f ./package/openwrt-gecoosac/gecoosac/Makefile ]; then
     sed -i 's/^PKG_HASH:=.*/PKG_HASH:=skip/' ./package/openwrt-gecoosac/gecoosac/Makefile
     echo "[libwrt] openwrt-gecoosac PKG_HASH set to skip"
 fi
-UPDATE_PACKAGE "luci-app-homeproxy" "ysuolmai/homeproxy" "main"
-UPDATE_PACKAGE "ddns-go luci-app-ddns-go" "ysuolmai/luci-app-ddns-go" "main" "pkg"
 UPDATE_PACKAGE "luci-app-openlist2" "sbwml/luci-app-openlist2" "main"
 
 #small-package
@@ -69,36 +67,16 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         taskd luci-lib-xterm luci-lib-taskd luci-app-ssr-plus luci-app-passwall2 \
         luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
         luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
-        luci-app-nikki luci-app-vlmcsd vlmcsd frp docker dockerd" "kenzok8/jell" "main" "pkg"
+        luci-app-nikki luci-app-vlmcsd vlmcsd docker dockerd" "kenzok8/jell" "main" "pkg"
 
-if [ -f ./package/frp/Makefile ]; then
-    if ! grep -q 'files/$(2).init' ./package/frp/Makefile; then
-        sed -i '/$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)\/$(2) $(1)\/usr\/bin\//a \
-\	$(INSTALL_DIR) $(1)/etc/init.d/\
-\	$(INSTALL_BIN) ./files/$(2).init $(1)/etc/init.d/$(2)\
-\	$(INSTALL_DIR) $(1)/etc/config/\
-\	$(INSTALL_CONF) ./files/$(2).config $(1)/etc/config/$(2)' ./package/frp/Makefile
-    fi
-
-    for init_file in ./package/frp/files/frpc.init ./package/frp/files/frps.init; do
-        if [ -f "$init_file" ] && ! grep -q 'mkdir -p /var/etc' "$init_file"; then
-            sed -i '/local conf_file="\/var\/etc\/$NAME.ini"/a \	mkdir -p /var/etc' "$init_file"
-        fi
-    done
-
-    for config_file in ./package/frp/files/frpc.config ./package/frp/files/frps.config; do
-        [ -f "$config_file" ] || continue
-        sed -i 's/option user frpc/option user root/g; s/option group frpc/option group root/g; s/option user frps/option user root/g; s/option group frps/option group root/g' "$config_file"
-    done
-
-    echo "[libwrt] frp init scripts and UCI defaults will be installed into frpc/frps packages"
-fi
+UPDATE_PACKAGE "frp luci-app-frpc luci-app-frps ddns-go luci-app-ddns-go \
+        luci-app-adguardhome luci-theme-shadcn luci-app-homeproxy" \
+        "ysuolmai/openwrt-packages" "main"
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
 UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
 
-UPDATE_PACKAGE "luci-app-adguardhome" "https://github.com/ysuolmai/luci-app-adguardhome.git" "apk"
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 
 UPDATE_PACKAGE "openwrt-podman" "https://github.com/breeze303/openwrt-podman" "main"
@@ -108,9 +86,6 @@ sed -i 's|$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickfile-$(ARCH_PACKAGES) $(1)/usr/bi
 # bandix
 UPDATE_PACKAGE "openwrt-bandix" "timsaya/openwrt-bandix" "main"
 UPDATE_PACKAGE "luci-app-bandix" "timsaya/luci-app-bandix" "main"
-
-UPDATE_PACKAGE "luci-theme-shadcn" "ysuolmai/luci-theme-shadcn" "main"
-
 
 # ============================================================
 # luci-app-diskman
