@@ -70,7 +70,8 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         luci-app-nikki luci-app-vlmcsd vlmcsd docker dockerd" "kenzok8/jell" "main" "pkg"
 
 UPDATE_PACKAGE "frp luci-app-frpc luci-app-frps ddns-go luci-app-ddns-go \
-        luci-app-adguardhome luci-theme-shadcn luci-app-homeproxy" \
+        luci-app-adguardhome luci-theme-shadcn luci-app-homeproxy \
+        moontvplus luci-app-moontvplus" \
         "ysuolmai/openwrt-packages" "main"
 
 #speedtest
@@ -168,6 +169,14 @@ provided_config_lines=(
     "CONFIG_PACKAGE_kmod-fs-cifs=y"
     "CONFIG_PACKAGE_cifsmount=y"
     "CONFIG_PACKAGE_luci-theme-shadcn=y"
+)
+
+# MoonTVPlus stays out of flash-only and non-IPQ60XX images. Its application
+# core is downloaded to persistent storage from the dedicated release channel.
+[[ $FIRMWARE_TAG == IPQ60XX*EMMC* ]] && provided_config_lines+=(
+    "CONFIG_PACKAGE_moontvplus=y"
+    "CONFIG_PACKAGE_luci-app-moontvplus=y"
+    "CONFIG_PACKAGE_luci-i18n-moontvplus-zh-cn=y"
 )
 
 DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
