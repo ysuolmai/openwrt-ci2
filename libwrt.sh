@@ -70,7 +70,7 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         luci-app-nikki luci-app-vlmcsd vlmcsd docker dockerd" "kenzok8/jell" "main" "pkg"
 
 UPDATE_PACKAGE "frp luci-app-frpc luci-app-frps ddns-go luci-app-ddns-go \
-        luci-app-adguardhome luci-theme-shadcn luci-app-homeproxy \
+        luci-app-adguardhome luci-theme-shadcn sing-box luci-app-homeproxy \
         moontvplus luci-app-moontvplus" \
         "ysuolmai/openwrt-packages" "main"
 

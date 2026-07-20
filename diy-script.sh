@@ -26,7 +26,7 @@ find feeds/luci feeds/packages package -maxdepth 5 \
   \( -name frp -o -name luci-app-frpc -o -name luci-app-frps \
      -o -name ddns-go -o -name luci-app-ddns-go \
      -o -name luci-app-adguardhome -o -name luci-theme-shadcn \
-     -o -name luci-app-homeproxy \) \
+     -o -name sing-box -o -name luci-app-homeproxy \) \
   -prune -exec rm -rf {} + 2>/dev/null
 rm -rf package/openwrt-packages
 git clone --depth=1 --single-branch --branch main \
