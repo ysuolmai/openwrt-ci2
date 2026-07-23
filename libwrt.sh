@@ -66,11 +66,12 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         taskd luci-lib-xterm luci-lib-taskd luci-app-ssr-plus luci-app-passwall2 \
         luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-cloudflarespeedtest \
         luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
-        luci-app-nikki luci-app-vlmcsd vlmcsd docker dockerd" "kenzok8/jell" "main" "pkg"
+        luci-app-nikki luci-app-vlmcsd vlmcsd docker" "kenzok8/jell" "main" "pkg"
 
 UPDATE_PACKAGE "frp luci-app-frp ddns-go luci-app-ddns-go \
         luci-app-adguardhome luci-theme-shadcn sing-box luci-app-homeproxy \
-        moontvplus luci-app-moontvplus tailscale luci-app-tailscale-community" \
+        moontvplus luci-app-moontvplus tailscale luci-app-tailscale-community \
+        dockerd luci-app-dockerman" \
         "ysuolmai/openwrt-packages" "main"
 
 #speedtest
@@ -234,8 +235,10 @@ rm -f package/kernel/mac80211/patches/nss/subsys/999-922-mac80211-fix-null-chanc
     "CONFIG_PACKAGE_dockerd=y"
     "CONFIG_PACKAGE_docker=y"
     "CONFIG_PACKAGE_docker-compose=y"
-    "CONFIG_PACKAGE_luci-app-docker=y"
-    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=y"
+    # luci-app-docker installs a competing S25docker service which starts
+    # dockerd without the maintained daemon configuration.
+    "CONFIG_PACKAGE_luci-app-docker=n"
+    "CONFIG_PACKAGE_luci-i18n-docker-zh-cn=n"
     "CONFIG_PACKAGE_luci-app-dockerman=y"
     "CONFIG_PACKAGE_luci-i18n-dockerman-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-openlist2=y"
@@ -358,7 +361,7 @@ if ! grep -q "CMAKE_POLICY_VERSION_MINIMUM" include/cmake.mk; then
 fi
 
 # ============================================================
-# 修复 Docker 依赖和编译
+# 使用自维护的原生 nftables Dockerman，并补齐 luci-lib-docker
 # ============================================================
 echo "Handling Docker dependencies..."
 
@@ -367,10 +370,10 @@ rm -rf package/feeds/luci/luci-lib-docker
 rm -rf package/luci-app-dockerman
 rm -rf package/luci-lib-docker
 
-echo "Cloning luci-app-dockerman..."
-git clone --depth 1 https://github.com/lisaac/luci-app-dockerman.git temp_dockerman
-mv temp_dockerman/applications/luci-app-dockerman package/luci-app-dockerman
-rm -rf temp_dockerman
+if [ ! -f package/openwrt-packages/luci-app-dockerman/Makefile ]; then
+    echo "错误: 自维护 luci-app-dockerman 未找到"
+    exit 1
+fi
 
 echo "Cloning luci-lib-docker..."
 git clone --depth 1 https://github.com/lisaac/luci-lib-docker.git temp_libdocker
@@ -380,12 +383,6 @@ else
     mv temp_libdocker package/luci-lib-docker
 fi
 rm -rf temp_libdocker
-
-if [ -f "package/luci-app-dockerman/Makefile" ]; then
-    echo "Removing cgroupfs-mount dependency..."
-    sed -i 's/+cgroupfs-mount //g' package/luci-app-dockerman/Makefile
-    sed -i 's/+cgroupfs-mount//g' package/luci-app-dockerman/Makefile
-fi
 
 ./scripts/feeds install ttyd
 ./scripts/feeds install luci-lib-docker
