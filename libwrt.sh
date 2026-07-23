@@ -69,7 +69,7 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
         luci-theme-argon netdata luci-app-netdata lucky luci-app-lucky luci-app-openclash mihomo \
         luci-app-nikki luci-app-vlmcsd vlmcsd docker dockerd" "kenzok8/jell" "main" "pkg"
 
-UPDATE_PACKAGE "frp luci-app-frpc luci-app-frps ddns-go luci-app-ddns-go \
+UPDATE_PACKAGE "frp luci-app-frp ddns-go luci-app-ddns-go \
         luci-app-adguardhome luci-theme-shadcn sing-box luci-app-homeproxy \
         moontvplus luci-app-moontvplus" \
         "ysuolmai/openwrt-packages" "main"
@@ -159,7 +159,7 @@ provided_config_lines=(
     "CONFIG_COREMARK_NUMBER_OF_THREADS=6"
     "CONFIG_PACKAGE_luci-app-filetransfer=y"
     "CONFIG_PACKAGE_openssh-sftp-server=y"
-    "CONFIG_PACKAGE_luci-app-frpc=y"
+    "CONFIG_PACKAGE_luci-app-frp=y"
     "CONFIG_OPKG_USE_CURL=y"
     "CONFIG_PACKAGE_opkg=y"
     "CONFIG_USE_APK=n"
@@ -276,7 +276,6 @@ rm -f package/kernel/mac80211/patches/nss/subsys/999-922-mac80211-fix-null-chanc
     "CONFIG_PACKAGE_kmod-nf-nat6=y"
     "CONFIG_PACKAGE_kmod-dummy=y"
     "CONFIG_PACKAGE_kmod-veth=y"
-    "CONFIG_PACKAGE_luci-app-frps=y"
     "CONFIG_PACKAGE_luci-app-samba4=y"
     "CONFIG_PACKAGE_luci-app-openclash=y"
 )

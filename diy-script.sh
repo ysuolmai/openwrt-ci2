@@ -23,7 +23,7 @@ rm -rf feeds/luci/applications/luci-app-serverchan
 # Shadcn and HomeProxy, removing feed copies before cloning it.
 find feeds/luci feeds/packages package -maxdepth 5 \
   \( -type d -o -type l \) \
-  \( -name frp -o -name luci-app-frpc -o -name luci-app-frps \
+  \( -name frp -o -name luci-app-frp -o -name luci-app-frpc -o -name luci-app-frps \
      -o -name ddns-go -o -name luci-app-ddns-go \
      -o -name luci-app-adguardhome -o -name luci-theme-shadcn \
      -o -name sing-box -o -name luci-app-homeproxy \) \
