@@ -451,12 +451,23 @@ fi
 # 升级 golang 到支持 go.mod >= 1.26 的版本
 # ============================================================
 WRT_DIR=$(pwd)
+GO_TMP_DIR=/tmp/openwrt-packages
 rm -rf feeds/packages/lang/golang
-git clone https://github.com/openwrt/packages --depth=1 --filter=blob:none --sparse /tmp/openwrt-packages
-cd /tmp/openwrt-packages && git sparse-checkout set lang/golang
-cp -r /tmp/openwrt-packages/lang/golang "$WRT_DIR/feeds/packages/lang/golang"
+rm -rf "$GO_TMP_DIR"
+git clone https://github.com/openwrt/packages --depth=1 --filter=blob:none --sparse "$GO_TMP_DIR"
+cd "$GO_TMP_DIR" && git sparse-checkout set lang/golang
+cp -r "$GO_TMP_DIR/lang/golang" "$WRT_DIR/feeds/packages/lang/golang"
 cd "$WRT_DIR"
-./scripts/feeds install golang
+GO_DEFAULT_VERSION=$(sed -n 's/^GO_DEFAULT_VERSION:=//p' feeds/packages/lang/golang/golang-values.mk | head -n 1)
+rm -rf package/feeds/packages/golang*
+./scripts/feeds update -i packages
+./scripts/feeds install -f golang "golang${GO_DEFAULT_VERSION}"
+rm -rf staging_dir/hostpkg/lib/go-* \
+       staging_dir/hostpkg/lib/go-cross \
+       staging_dir/hostpkg/stamp/.golang* \
+       staging_dir/hostpkg/stamp/.go* \
+       build_dir/hostpkg/go-* \
+       build_dir/hostpkg/golang*
 
 # ============================================================
 # 修复 vlmcsd 编译
