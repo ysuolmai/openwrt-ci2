@@ -50,7 +50,6 @@ UPDATE_PACKAGE() {
 
 
 UPDATE_PACKAGE "luci-app-poweroff" "esirplayground/luci-app-poweroff" "main"
-UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 UPDATE_PACKAGE "openwrt-gecoosac" "ysuolmai/openwrt-gecoosac" "main"
 # gecoosac 上游作者经常覆盖同名 release asset，PKG_HASH 跟不上。
 if [ -f ./package/openwrt-gecoosac/gecoosac/Makefile ]; then
@@ -71,14 +70,12 @@ UPDATE_PACKAGE "xray-core xray-plugin dns2tcp dns2socks haproxy hysteria \
 
 UPDATE_PACKAGE "frp luci-app-frp ddns-go luci-app-ddns-go \
         luci-app-adguardhome luci-theme-shadcn sing-box luci-app-homeproxy \
-        moontvplus luci-app-moontvplus" \
+        moontvplus luci-app-moontvplus tailscale luci-app-tailscale-community" \
         "ysuolmai/openwrt-packages" "main"
 
 #speedtest
 UPDATE_PACKAGE "luci-app-netspeedtest" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
 UPDATE_PACKAGE "speedtest-cli" "https://github.com/sbwml/openwrt_pkgs.git" "main" "pkg"
-
-UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
 
 UPDATE_PACKAGE "openwrt-podman" "https://github.com/breeze303/openwrt-podman" "main"
 UPDATE_PACKAGE "luci-app-quickfile" "https://github.com/sbwml/luci-app-quickfile" "main"
@@ -163,7 +160,9 @@ provided_config_lines=(
     "CONFIG_OPKG_USE_CURL=y"
     "CONFIG_PACKAGE_opkg=y"
     "CONFIG_USE_APK=n"
-    "CONFIG_PACKAGE_luci-app-tailscale=y"
+    "CONFIG_PACKAGE_tailscale=y"
+    "CONFIG_PACKAGE_luci-app-tailscale-community=y"
+    "CONFIG_PACKAGE_luci-i18n-tailscale-community-zh-cn=y"
     "CONFIG_PACKAGE_luci-app-gecoosac=y"
     "CONFIG_PACKAGE_luci-app-cifs-mount=y"
     "CONFIG_PACKAGE_kmod-fs-cifs=y"
