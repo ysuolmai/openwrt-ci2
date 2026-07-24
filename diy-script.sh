@@ -138,3 +138,7 @@ find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
+
+# Install the persistent ZeroTier/Tailscale coexistence guard.
+install -Dm755 "${GITHUB_WORKSPACE}/scripts/98_zerotier_tailscale_coexist.sh" "package/base-files/files/etc/uci-defaults/98_zerotier_tailscale_coexist"
+install -Dm644 "${GITHUB_WORKSPACE}/scripts/zerotier.local.conf" "package/base-files/files/etc/zerotier.local.conf"
