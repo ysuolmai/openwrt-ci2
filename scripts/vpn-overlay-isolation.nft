@@ -1,0 +1,13 @@
+destroy table inet vpn_overlay_isolation
+
+table inet vpn_overlay_isolation {
+	chain input {
+		type filter hook input priority -10; policy accept;
+		iifname "zt*" udp dport 41641 counter drop comment "Block Tailscale transport over ZeroTier"
+	}
+
+	chain output {
+		type filter hook output priority -10; policy accept;
+		oifname "zt*" udp sport 41641 counter drop comment "Block Tailscale transport over ZeroTier"
+	}
+}

@@ -312,6 +312,7 @@ find ./ -name "dark.less" -exec sed -i 's/#5e72e4/#31A1A1/g; s/#483d8b/#31A1A1/g
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_ttyd-nopass.sh" "package/base-files/files/etc/uci-defaults/99_ttyd-nopass"
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/99_set_argon_primary.sh" "package/base-files/files/etc/uci-defaults/99_set_argon_primary"
 install -Dm755 "${GITHUB_WORKSPACE}/scripts/98_zerotier_tailscale_coexist.sh" "package/base-files/files/etc/uci-defaults/98_zerotier_tailscale_coexist"
+install -Dm644 "${GITHUB_WORKSPACE}/scripts/vpn-overlay-isolation.nft" "package/base-files/files/usr/share/nftables.d/ruleset-post/vpn-overlay-isolation.nft"
 install -Dm644 "${GITHUB_WORKSPACE}/scripts/zerotier.local.conf" "package/base-files/files/etc/zerotier.local.conf"
 
 # 设置默认主题为 shadcn（文件名排在 argon 之后，确保覆盖）
